@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+import maya.cmds as cmds
 import maya.api.OpenMaya as om
 
 
@@ -31,9 +31,9 @@ class MetanObject(object):
             try:
                 _dagpath = sellist.getDagPath(0)
                 _transform = om.MFnTransform(_dagpath.transform())
-                mplugs = [_transform.findPlug(_transform.attribute(i), False) for i in range(_transform.attributeCount())]
+                # mplugs = [_transform.findPlug(_transform.attribute(i), False) for i in range(_transform.attributeCount())]
                 # mplugs = [om.MFnAttribute(_transform.attribute(i)) for i in range(_transform.attributeCount())]
-                [return_obj.__setattr__(p.name().split(".")[-1], p) for p in mplugs]
+                # [return_obj.__setattr__(p.name().split(".")[-1], p) for p in mplugs]
                 # for i in range(_transform.attributeCount()):
                 #     mattr = om.MFnAttribute(_transform.attribute(i))
                 #     # setattr(return_obj, mattr.name, mattr)
@@ -52,8 +52,32 @@ class MetanObject(object):
 
         return return_obj
 
+    def __getattr__(self, attr):
+        attrname = self._transform.name()+"."+attr
+        if cmds.objExists(attrname):
+            return self._transform.findPlug(self._transform.attribute(attr), False)
+        else:
+            # except AttributeError:
+            raise AttributeError, "%r has no attribute or method named '%s'" % (self, attr)
+
     def __init__(self, *args, **kws):
         pass
+
+    def __repr__(self):
+        return '{0}.{1}("{2}")'.format(self.__class__.__module__, self.__class__.__name__, self.name())
+
+    def __str__(self):
+        return self.__repr__()
+
+    def nodetype(self):
+        if self._dependnode:
+            return self._dependnode.typeName
+
+    def name(self):
+        if self._dagpath:
+            return self._dagpath.partialPathName()
+        if self._dependnode:
+            return self._dependnode.name()
 
     # def __getattribute__(self, item):
     #     print "__getattribute__",item
