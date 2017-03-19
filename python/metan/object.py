@@ -24,20 +24,11 @@ class MetanObject(object):
         arg = args[0]
         if isinstance(arg, str):
             name = arg
-            # obj = to_object(arg)
-            # sellist = om.MGlobal.getSelectionListByName(name)
             sellist = om.MSelectionList()
             sellist.add(name)
             try:
                 _dagpath = sellist.getDagPath(0)
                 _transform = om.MFnTransform(_dagpath.transform())
-                # mplugs = [_transform.findPlug(_transform.attribute(i), False) for i in range(_transform.attributeCount())]
-                # mplugs = [om.MFnAttribute(_transform.attribute(i)) for i in range(_transform.attributeCount())]
-                # [return_obj.__setattr__(p.name().split(".")[-1], p) for p in mplugs]
-                # for i in range(_transform.attributeCount()):
-                #     mattr = om.MFnAttribute(_transform.attribute(i))
-                #     # setattr(return_obj, mattr.name, mattr)
-                #     return_obj.__setattr__(mattr.name, mattr)
             except TypeError:
                 pass
             try:
@@ -58,13 +49,24 @@ class MetanObject(object):
             return self._transform.findPlug(self._transform.attribute(attr), False)
         else:
             # except AttributeError:
-            raise AttributeError, "%r has no attribute or method named '%s'" % (self, attr)
+            raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
     def __init__(self, *args, **kws):
         pass
 
+
+class MayaNode(MetanObject):
+
     def __repr__(self):
-        return '{0}.{1}("{2}")'.format(self.__class__.__module__, self.__class__.__name__, self.name())
+        # return '{0}.{1}("{2}")'.format(self.__class__.__module__, self.__class__.__name__, self.name())
+        return '{0}("{1}", type="{2}")'.format(self.__class__.__name__, self.name(), self.nodetype())
+        return "{0} <node_type '{1}'> <node_name '{2}'>".format(self.__class__, self.nodetype(), self.name())
+        return "%s(Wrapped Standard MayaNode, node: '%s')" % (self.__class__, self.name())
+
+        return '<Wrapped MayaNode. type:{3}> {0}.{1}("{2}")'.format(self.__class__.__module__,
+                                                                    self.__class__.__name__,
+                                                                    self.name(),
+                                                                    self.nodetype())
 
     def __str__(self):
         return self.__repr__()
@@ -79,5 +81,6 @@ class MetanObject(object):
         if self._dependnode:
             return self._dependnode.name()
 
-    # def __getattribute__(self, item):
-    #     print "__getattribute__",item
+
+class MetaNode(MayaNode):
+    pass
