@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
+from .import attribute as att
 
 
 def to_object(name):
@@ -53,7 +54,8 @@ class MetanObject(object):
     def __getattr__(self, attr):
         attrname = self.name()+"."+attr
         if cmds.objExists(attrname):
-            return self._mDependNode.findPlug(self._mDependNode.attribute(attr), False)
+            return att.MetanAttr(self._mDependNode, attr)
+            # return self._mDependNode.findPlug(self._mDependNode.attribute(attr), False)
         else:
             # except AttributeError:
             raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
