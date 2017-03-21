@@ -19,11 +19,11 @@ class MetanObject(object):
     def __new__(cls, *args, **kws):
 
         _api_objects = dict([(k, None) for k in ["_mDagPath", "_mDependNode", "_mObject", "_mHandle"]])
-        newobj = super(cls.__class__, cls).__new__(cls)
+        _newobj = super(cls.__class__, cls).__new__(cls)
 
         if not len(args):
-            # todo:
-            return newobj
+            # todo: create?
+            return _newobj
 
         arg = args[0]
         if isinstance(arg, str):
@@ -47,9 +47,9 @@ class MetanObject(object):
                 pass
 
             for k, v in _api_objects.items():
-                newobj.__setattr__(k, v)
+                _newobj.__setattr__(k, v)
 
-        return newobj
+        return _newobj
 
     def __getattr__(self, attr):
         attrname = self.name()+"."+attr

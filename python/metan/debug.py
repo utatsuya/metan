@@ -4,10 +4,7 @@ import time
 import cProfile
 import pstats
 import StringIO
-import os as __os
-import sys as _sys
 
-__all__ = ["run_profile"]
 
 class FuncTimer(object):
     data = {}
@@ -59,7 +56,7 @@ class FuncTimer(object):
 
 
 def run_profile(func, sort_order="cumtime", count=1, strip_dir=True, name_filter=""):
-    """sort_order : ncalls, tottime, cumtime, filename"""
+    """sort_order : keywords 'ncalls', 'tottime', 'cumtime', 'filename' """
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -80,36 +77,3 @@ def run_profile(func, sort_order="cumtime", count=1, strip_dir=True, name_filter
     return wrapper
 
 
-def run_profile2(func, sort_order="cumtime", count=1):
-    """sort_order : ncalls, tottime, cumtime, filename"""
-    # import profile
-    from time import gmtime, strftime
-    import cProfile, pstats, StringIO
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        tempfile = "d:/profile_{0}.pstats"
-
-        def command():
-            func(*args, **kwargs)
-
-        prof = cProfile.Profile()
-        filenames = []
-        profiles = []
-        for i in range(count):
-            filename = tempfile.format(i)
-            _profile = cProfile.runctx("command()", globals(), locals(), filename=filename)
-            profiles.append(_profile)
-            filenames.append(filename)
-        stream = StringIO.StringIO()
-        stats = pstats.Stats(filenames[0], stream=stream)
-        for i in range(1, count):
-            stats.add(filenames[i])
-
-        stats.sort_stats(sort_order)
-        # 上位 80%まで出力します
-        stats.print_stats()
-
-        print stream.getvalue()
-        return _profile
-    return wrapper

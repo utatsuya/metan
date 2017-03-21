@@ -66,7 +66,21 @@ class MetanAttr(object):
         return self._mPlug.name().split(".")[-1]
 
     def get(self):
+        # todo: 型に応じて適切な値をget
         return self._mPlug.asDouble()
 
     def set(self, value):
-        pass
+        self.set_by_cmds(value)
+        # self.set_by_api(value)
+
+    def set_by_cmds(self, value):
+        # todo: 型に応じて適切な値をset cmds.setAttr()を利用する
+        cmds.setAttr(self._mPlug.name(), value)
+
+    def set_by_api(self, value):
+        # todo: 型に応じて適切な値をset apiでsetする undo非サポート
+        self._mPlug.setDouble(value)
+
+    # def valid(self):
+    #     return self._mHandle.isValid()
+
