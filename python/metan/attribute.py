@@ -6,18 +6,55 @@ import maya.api.OpenMaya as om
 class MetanAttr(object):
 
     def __new__(cls, *args, **kws):
-        _api_objects = dict([(k, None) for k in ["_mPlug", "_mObject", "_mHandle"]])
+        _api_objects = dict([(k, None) for k in ["_mDependNode", "_mPlug", "_mObject", "_mHandle"]])
+        _cache = dict([(k, None) for k in ["_isCompound", "_numChildren", "_apiType", "_apiTypeStr"]])
         newobj = super(cls.__class__, cls).__new__(cls)
-        _dependnode = args[0]
-        _attrname = args[1]
 
-        _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+        _attrname = args[1]
+        # if args[0].type() == om.MFn.kDependencyNode:
+        if isinstance(args[0], om.MFnDependencyNode):
+            _dependnode = args[0]
+            _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+            _api_objects["_mDependNode"] = _dependnode
+
+        # elif isinstance(args[0], om.MPlug):
+        elif isinstance(args[0], MetanAttr):
+            _pplug = args[0]
+            _dependnode = _pplug._mDependNode
+            _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+
+        _attribute = _plug.attribute()
+
         _api_objects["_mPlug"] = _plug
+        _api_objects["_mObject"] = _attribute
+        _cache["_isCompound"] = _plug.isCompound
+        if _cache["_isCompound"]:
+            _cache["_numChildren"] = _plug.numChildren()
+        _cache["_apiType"] = _attribute.apiType()
+        _cache["_apiTypeStr"] = _attribute.apiTypeStr
 
         for k, v in _api_objects.items():
             newobj.__setattr__(k, v)
 
+        for k, v in _cache.items():
+            newobj.__setattr__(k, v)
+
         return newobj
+
+    def __getattr__(self, attr):
+        # todo: refactor
+        attrname = self._mPlug.name().split(".")[0] + "." + self._mPlug.partialName()+"."+attr
+        attrname_ = self._mPlug.name().split(".")[0] + "." + self._mPlug.partialName()+attr
+        # print attr
+        # print attrname
+        if cmds.objExists(attrname):
+            return MetanAttr(self, attr)
+        elif cmds.objExists(attrname_):
+            _attr = self._mPlug.partialName()+attr
+            return MetanAttr(self, _attr)
+        else:
+            # except AttributeError:
+            raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
     def __repr__(self):
         return '{0}("{1}")'.format(self.__class__.__name__, self.name())
