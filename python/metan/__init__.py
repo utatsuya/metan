@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
-from . import object
+from . import debug as mdebug
+from . import wrapclass as wc
 
-M = object.MetaNode
+M = wc.MetanClass
