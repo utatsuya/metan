@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 from .import attribute as att
@@ -14,6 +17,14 @@ def to_object(name):
 
 
 class MetanObject(object):
+    u"""
+    >>> a = MetanObject("pCube1")
+    >>> print(a.t.x.get())
+    0.0
+
+
+    """
+
     metan_class = None
 
     def __new__(cls, *args, **kws):
