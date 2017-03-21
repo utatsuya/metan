@@ -33,19 +33,20 @@ class MetanObject(object):
                 # _dagpath = sellist.getDagPath(0)
                 _api_objects["_mDagPath"] = sellist.getDagPath(0)
                 _api_objects["_mObject"] = _api_objects["_mDagPath"].node()
+                _api_objects["_mHandle"] = om.MObjectHandle(_api_objects["_mObject"])
                 # _transform = om.MFnTransform(_dagpath.transform())
             except TypeError:
                 pass
             try:
                 # _mo = sellist.getDependNode(0)
                 _api_objects["_mObject"] = sellist.getDependNode(0)
+                _api_objects["_mHandle"] = om.MObjectHandle(_api_objects["_mObject"])
                 _api_objects["_mDependNode"] = om.MFnDependencyNode(_api_objects["_mObject"])
             except TypeError:
                 pass
 
             for k, v in _api_objects.items():
                 newobj.__setattr__(k, v)
-
 
         return newobj
 
@@ -74,10 +75,16 @@ class MetanObject(object):
             return self._mDependNode.typeName
 
     def name(self):
+        if not self.valid():
+            raise RuntimeError
+
         if self._mDagPath:
             return self._mDagPath.partialPathName()
         elif self._mDependNode:
             return self._mDependNode.name()
+
+    def valid(self):
+        return self._mHandle.isValid()
 
 
 class MetanClass(MetanObject):
