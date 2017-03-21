@@ -66,7 +66,7 @@ class MetanAttr(object):
         return self._mPlug.name().split(".")[-1]
 
     def get(self):
-        return
+        return self._mPlug.asDouble()
 
     def set(self, value):
         pass
