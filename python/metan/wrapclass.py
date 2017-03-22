@@ -57,7 +57,7 @@ class MetanObject(object):
 
         return _newobj
 
-    def __getattr__(self, attr):
+    def attr(self, attr):
         attrname = self.name()+"."+attr
         if cmds.objExists(attrname):
             return att.MetanAttr(self._mDependNode, attr)
@@ -65,6 +65,9 @@ class MetanObject(object):
         else:
             # except AttributeError:
             raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
+
+    def __getattr__(self, attr):
+        return self.attr(attr)
 
     def __init__(self, *args, **kws):
         pass
