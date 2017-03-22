@@ -46,19 +46,14 @@ class MetanAttr(object):
         return newobj
 
     def attr(self, attr):
-        # todo: refactor
-        attrname = self._mPlug.name().split(".")[0] + "." + self._mPlug.partialName()+"."+attr
-        attrname_ = self._mPlug.name().split(".")[0] + "." + self._mPlug.partialName()+attr
-        # print attr
-        # print attrname
-        if cmds.objExists(attrname):
+        try:
             return MetanAttr(self, attr)
-        elif cmds.objExists(attrname_):
-            _attr = self._mPlug.partialName()+attr
-            return MetanAttr(self, _attr)
-        else:
-            # except AttributeError:
-            raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
+        except RuntimeError:
+            try:
+                _attr = self._mPlug.partialName()+attr
+                return MetanAttr(self, _attr)
+            except RuntimeError:
+                raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
     def __getattr__(self, attr):
         return self.attr(attr)
