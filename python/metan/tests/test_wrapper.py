@@ -11,9 +11,10 @@ class TestScene(unittest.TestCase):
         cube = cmds.polyCube()[0]
         print cube
         m = metan.M("pCube1")
-        print m.t.x.get()
-        print m.t.tx.get()
-        print m.tx.get()
+        print "m.t.x.get()", m.t.x.get()
+        print "m.t.tx.get()", m.t.tx.get()
+        print "m.tx.get()", m.tx.get()
+        print "m.t.get()", m.t.get()
 
     def runTest(self):
         self.test_getset()

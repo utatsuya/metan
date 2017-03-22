@@ -18,11 +18,6 @@ def to_object(name):
 
 class MetanObject(object):
     u"""
-    >>> a = MetanObject("pCube1")
-    >>> print(a.t.x.get())
-    0.0
-
-
     """
 
     metan_class = None
