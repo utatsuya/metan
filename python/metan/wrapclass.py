@@ -3,6 +3,7 @@ from __future__ import print_function, absolute_import, division
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 from .import attribute as att
+from . import dag as dag
 
 
 def to_object(name):
@@ -38,6 +39,10 @@ class MetanObject(object):
                 # _dagpath = sellist.getDagPath(0)
                 _api_objects["_mDagPath"] = sellist.getDagPath(0)
                 _api_objects["_mObject"] = _api_objects["_mDagPath"].node()
+                if _api_objects["_mObject"].apiType() == om.MFn.kTransform and cls.__name__ == MetanObject.__name__:
+                    return dag.Transform(name)
+                elif _api_objects["_mObject"].apiType() == om.MFn.kJoint and cls.__name__ == MetanObject.__name__:
+                    return dag.Joint(name)
                 _api_objects["_mHandle"] = om.MObjectHandle(_api_objects["_mObject"])
                 # _transform = om.MFnTransform(_dagpath.transform())
             except TypeError:
