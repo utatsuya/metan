@@ -10,17 +10,25 @@ import maya.api.OpenMaya as om
 class MetanAttr(object):
 
     def __new__(cls, *args, **kws):
+        u"""
+        args[0] == om.MFnDependecyNode or MetanAttr or om.MPlug
+
+        """
         _api_objects = dict([(k, None) for k in ["_mDependNode", "_mPlug", "_mObject", "_mHandle"]])
         _cache = dict([(k, None) for k in ["_isCompound", "_numChildren", "_apiType", "_apiTypeStr"]])
         newobj = super(cls.__class__, cls).__new__(cls)
 
-        # if args[0].type() == om.MFn.kDependencyNode:
         if isinstance(args[0], om.MFnDependencyNode):
             _dependnode = args[0]
-            _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
             _api_objects["_mDependNode"] = _dependnode
+            if u"[" in args[1] and args[1][-1] == u"]":
+                _attrname, _num = args[1].split(u"[")
+                _index = int(_num[:-1])
+                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+                _plug = _plug.elementByLogicalIndex(_index)
+            else:
+                _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
-        # elif isinstance(args[0], om.MPlug):
         elif isinstance(args[0], MetanAttr):
             _pplug = args[0]
             _dependnode = _pplug._mDependNode
@@ -62,7 +70,7 @@ class MetanAttr(object):
         return self.attr(attr)
 
     def __repr__(self):
-        return '{0}("{1}")'.format(self.__class__.__name__, self.name())
+        return u'{0}("{1}")'.format(self.__class__.__name__, self.name())
 
     def __str__(self):
         return self.__repr__()

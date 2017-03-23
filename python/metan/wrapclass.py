@@ -32,7 +32,7 @@ class MetanObject(object):
             return _newobj
 
         arg = args[0]
-        if isinstance(arg, str):
+        if isinstance(arg, (str, unicode)):
             name = arg
             sellist = om.MSelectionList()
             sellist.add(name)
@@ -58,7 +58,7 @@ class MetanObject(object):
         return _newobj
 
     def attr(self, attr):
-        attrname = self.name()+"."+attr
+        attrname = self.name()+u"."+attr
         if cmds.objExists(attrname):
             return att.MetanAttr(self._mDependNode, attr)
             # return self._mDependNode.findPlug(self._mDependNode.attribute(attr), False)

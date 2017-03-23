@@ -28,6 +28,7 @@ class TestScene(unittest.TestCase):
         print 'm.attr("pim").get()', m.attr("pim").get()
         print 'm.attr("pim")[0].get()', m.attr("pim")[0].get()
         print 'm.attr("pim[0]").get()', m.attr("pim[0]").get()
+        print "="*20
 
     def runTest(self):
         self.test_getset()

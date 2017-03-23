@@ -37,5 +37,5 @@ def run():
     reloader()
     suite = unittest.TestSuite()
     suite.addTest(metan.tests.test_wrapper.TestScene())
-    suite.addTest(metan.tests.test_wrapper.TestScene2())
+    # suite.addTest(metan.tests.test_wrapper.TestScene2())
     unittest.TextTestRunner().run(suite)
