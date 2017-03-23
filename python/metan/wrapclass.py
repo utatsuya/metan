@@ -60,7 +60,7 @@ class MetanObject(object):
     def attr(self, attr):
         attrname = self.name()+u"."+attr
         if cmds.objExists(attrname):
-            return att.MetanAttr(self._mDependNode, attr)
+            return att.Attribute(self._mDependNode, attr)
             # return self._mDependNode.findPlug(self._mDependNode.attribute(attr), False)
         else:
             # except AttributeError:
@@ -74,19 +74,19 @@ class MetanObject(object):
 
     def __repr__(self):
         if self.metan_class:
-            return '<Meta> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.name(), self.nodetype())
+            return '<Meta> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.name(), self.nodeType())
         else:
-            return '<Standard> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.name(), self.nodetype())
+            return '<Standard> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.name(), self.nodeType())
 
     def __str__(self):
         return self.__repr__()
 
-    def nodetype(self):
+    def nodeType(self):
         if self._mDependNode:
             return self._mDependNode.typeName
 
     def name(self):
-        if not self.valid():
+        if not self.isValid():
             raise RuntimeError
 
         if self._mDagPath:
@@ -94,7 +94,7 @@ class MetanObject(object):
         elif self._mDependNode:
             return self._mDependNode.name()
 
-    def valid(self):
+    def isValid(self):
         return self._mHandle.isValid()
 
 

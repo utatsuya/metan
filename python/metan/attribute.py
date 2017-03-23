@@ -7,11 +7,11 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 
 
-class MetanAttr(object):
+class Attribute(object):
 
     def __new__(cls, *args, **kws):
         u"""
-        args[0] == om.MFnDependecyNode or MetanAttr or om.MPlug
+        args[0] == om.MFnDependecyNode or Attribute or om.MPlug
 
         """
         _api_objects = dict([(k, None) for k in ["_mDependNode", "_mPlug", "_mObject", "_mHandle"]])
@@ -28,7 +28,7 @@ class MetanAttr(object):
             else:
                 _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
-        elif isinstance(args[0], MetanAttr):
+        elif isinstance(args[0], Attribute):
             _mattr = args[0]
             _pplug = _mattr._mPlug
             _dependnode = _mattr._mDependNode
@@ -69,20 +69,19 @@ class MetanAttr(object):
 
     def attr(self, attr):
         try:
-            return MetanAttr(self, attr)
+            return Attribute(self, attr)
         except RuntimeError:
             try:
                 _attr = self._mPlug.partialName()+attr
-                return MetanAttr(self, _attr)
+                return Attribute(self, _attr)
             except RuntimeError:
                 raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
     def __getattr__(self, attr):
-        # todo: self.attrをコールせずにアトリビュートの有無を確認して例外処理した方が効率がよいのでは？
         return self.attr(attr)
 
     def __repr__(self):
-        return u'{0}("{1}")'.format(self.__class__.__name__, self.name())
+        return u'{0}("{1}")'.format(self.__class__.__name__, self.__name())
 
     def __str__(self):
         return self.__repr__()
@@ -95,7 +94,7 @@ class MetanAttr(object):
             yield self.__getitem__(i)
 
     def __getitem__(self, index):
-        return MetanAttr(self._mPlug.elementByLogicalIndex(index))
+        return Attribute(self._mPlug.elementByLogicalIndex(index))
 
     def __len__(self):
         size = self.size()
@@ -109,11 +108,33 @@ class MetanAttr(object):
         if self._mPlug.isArray:
             return _mplug.numElements()
 
-    def name(self):
-        # todo: 本来はノード名を含めた名前を返す
-        return self._mPlug.name().split(".")[-1]
+    def __name(self):
+        return self.name().split(".")[-1]
 
-    def _get_plug_value(self, plug):
+    def name(self):
+        return self._mPlug.name()
+
+    def longName(self):
+        return self.attrName(longName=True)
+
+    def sortName(self):
+        return self.attrName(longName=False)
+
+    def nodeName(self):
+        return self.name().split(".")[0]
+
+    def attrName(self, longName=False):
+        if longName:
+            return self.__name()
+        return self._mPlug.partialName()
+
+    def getChildren(self):
+        if self._mPlug.isCompound:
+            return [Attribute(self._mPlug.child(i)) for i in range(self._mPlug.numChildren())]
+        else:
+            raise TypeError("Data type is not valid here")
+
+    def _getPlugValue(self, plug):
         _obj = plug.attribute()
         _apitype = _obj.apiType()
         # _obj = self._mObject
@@ -128,16 +149,16 @@ class MetanAttr(object):
                 _count = plug.numElements()
                 if _count == 0:
                     _plug = plug.elementByLogicalIndex(0)
-                    return [self._get_plug_value(_plug)]
+                    return [self._getPlugValue(_plug)]
 
                 for i in range(_count):
                     _plug = plug.elementByPhysicalIndex(i)
-                    res.append(self._get_plug_value(_plug))
+                    res.append(self._getPlugValue(_plug))
             else:
                 _count = plug.numChildren()
                 for i in range(_count):
                     _plug = plug.child(i)
-                    res.append(self._get_plug_value(_plug))
+                    res.append(self._getPlugValue(_plug))
 
             _child_apitype = _plug.attribute().apiType()
 
@@ -193,21 +214,23 @@ class MetanAttr(object):
             _count_children = plug.numChildren()
             for i in range(_count_children):
                 _plug = plug.child(i)
-                res.append(self._get_plug_value(_plug))
+                res.append(self._getPlugValue(_plug))
             return res
 
     def get(self):
-        return self._get_plug_value(self._mPlug)
+        return self._getPlugValue(self._mPlug)
 
     def set(self, value):
-        self.set_by_cmds(value)
-        # self.set_by_api(value)
+        self.__setUseCmd(value)
 
-    def set_by_cmds(self, value):
+    def _set(self, value):
+        self.__setUseApi(value)
+
+    def __setUseCmd(self, value):
         # todo: 型に応じて適切な値をset cmds.setAttr()を利用する
         cmds.setAttr(self._mPlug.name(), value)
 
-    def set_by_api(self, value):
+    def __setUseApi(self, value):
         # todo: 型に応じて適切な値をset apiでsetする undo非サポート
         self._mPlug.setDouble(value)
 
