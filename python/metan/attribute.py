@@ -88,13 +88,26 @@ class MetanAttr(object):
         return self.__repr__()
 
     def __iter__(self):
-        u"""TODO: これ実装しないと無限ループする"""
-        pass
+        size = self.size()
+        if size is None:
+            raise TypeError("iter() returned non - iterator of type '{0}'".format(self.__class__.__name__))
+        for i in range(size):
+            yield self.__getitem__(i)
 
     def __getitem__(self, index):
-        # return self.attr("{0}[{1}]".format(self._mDependNode.name(), index))
-        # return self.attr(self._mPlug.elementByLogicalIndex(index))
         return MetanAttr(self._mPlug.elementByLogicalIndex(index))
+
+    def __len__(self):
+        size = self.size()
+        if size is not None:
+            return size
+        else:
+            raise TypeError("object of type '{0}' has no len()".format(self.__class__.__name__))
+
+    def size(self):
+        _mplug = self._mPlug
+        if self._mPlug.isArray:
+            return _mplug.numElements()
 
     def name(self):
         # todo: 本来はノード名を含めた名前を返す
