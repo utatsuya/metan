@@ -20,7 +20,6 @@ class MetanAttr(object):
 
         if isinstance(args[0], om.MFnDependencyNode):
             _dependnode = args[0]
-            _api_objects["_mDependNode"] = _dependnode
             if u"[" in args[1] and args[1][-1] == u"]":
                 _attrname, _num = args[1].split(u"[")
                 _index = int(_num[:-1])
@@ -30,15 +29,28 @@ class MetanAttr(object):
                 _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
         elif isinstance(args[0], MetanAttr):
-            _pplug = args[0]
-            _dependnode = _pplug._mDependNode
-            _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
+            _mattr = args[0]
+            _pplug = _mattr._mPlug
+            _dependnode = _mattr._mDependNode
+
+            if _pplug.isElement:
+                _plug = _pplug.child(_dependnode.attribute(args[1]))
+            elif _pplug.isArray:
+                _plug = _pplug.elementByLogicalIndex(0)
+                _plug = _plug.child(_dependnode.attribute(args[1]))
+            else:
+                _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
         elif isinstance(args[0], om.MPlug):
             _plug = args[0]
+            if len(args) > 1:
+                print(args[0], args[1])
+                raise
+            _dependnode = om.MFnDependencyNode(_plug.node())
 
         _attribute = _plug.attribute()
 
+        _api_objects["_mDependNode"] = _dependnode
         _api_objects["_mPlug"] = _plug
         _api_objects["_mObject"] = _attribute
         _cache["_isCompound"] = _plug.isCompound
@@ -85,6 +97,7 @@ class MetanAttr(object):
         return MetanAttr(self._mPlug.elementByLogicalIndex(index))
 
     def name(self):
+        # todo: 本来はノード名を含めた名前を返す
         return self._mPlug.name().split(".")[-1]
 
     def _get_plug_value(self, plug):
@@ -94,25 +107,34 @@ class MetanAttr(object):
         # _apitype = self._apiType
         # print(_obj.apiTypeStr, plug.name())
 
-        if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float, om.MFn.kAttribute4Double]:
+        if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float, om.MFn.kAttribute4Double,
+                        om.MFn.kAttribute2Double, om.MFn.kAttribute2Float]:
             res = []
             _plug = None
-            _count_children = plug.numChildren()
-            for i in range(_count_children):
-                _plug = plug.child(i)
-                res.append(self._get_plug_value(_plug))
+            if plug.isArray:
+                _count = plug.numElements()
+                if _count == 0:
+                    _plug = plug.elementByLogicalIndex(0)
+                    return [self._get_plug_value(_plug)]
+
+                for i in range(_count):
+                    _plug = plug.elementByPhysicalIndex(i)
+                    res.append(self._get_plug_value(_plug))
+            else:
+                _count = plug.numChildren()
+                for i in range(_count):
+                    _plug = plug.child(i)
+                    res.append(self._get_plug_value(_plug))
 
             _child_apitype = _plug.attribute().apiType()
 
-            if _count_children > 3:
-                return res
+            if _count == 3:
+                if _child_apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
+                    return om.MVector(res)
+                elif _child_apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
+                    return om.MVector(res)
 
-            if _child_apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
-                return om.MVector(res)
-            elif _child_apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
-                return om.MVector(res)
-            else:
-                return res
+            return res
 
         elif _apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
             angle_unit = om.MAngle.uiUnit()
@@ -140,6 +162,7 @@ class MetanAttr(object):
         elif _apitype == om.MFn.kTypedAttribute:
             _mfnattr = om.MFnTypedAttribute(_obj)
             _type = _mfnattr.attrType()
+            # print (_type, "attrType()")
             if _type == om.MFnData.kString:
                 return plug.asString()
             elif _type == om.MFnData.kMatrix:
@@ -161,9 +184,7 @@ class MetanAttr(object):
             return res
 
     def get(self):
-        # todo: 型に応じて適切な値をget
         return self._get_plug_value(self._mPlug)
-        # return self._mPlug.asDouble()
 
     def set(self, value):
         self.set_by_cmds(value)
