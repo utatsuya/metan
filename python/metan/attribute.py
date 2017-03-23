@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import print_function, absolute_import, division
 
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
