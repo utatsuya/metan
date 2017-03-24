@@ -5,9 +5,26 @@ import maya.api.OpenMaya as om
 # import metan.attribute as att
 from metan.exception import *
 
+def to_mobject(name):
+    sellist = om.MSelectionList()
+    sellist.add(name)
+    try:
+        return sellist.getDependNode(0)
+    except TypeError:
+        return
 
-def to_object(name):
-    sellist = om.MGlobal.getSelectionListByName(name)
+def to_dependencynode(name):
+    sellist = om.MSelectionList()
+    sellist.add(name)
+    try:
+        return om.MFnDependencyNode(sellist.getDependNode(0))
+    except TypeError:
+        return
+
+def to_api_object(name):
+    # sellist = om.MGlobal.getSelectionListByName(name)
+    sellist = om.MSelectionList()
+    sellist.add(name)
     try:
         return sellist.getDagPath(0)
     except TypeError:
@@ -20,7 +37,6 @@ class MetanObject(object):
     """
 
     metan_class = None
-    # _api_objects_ = {}
 
     def __new__(cls, *args, **kws):
         import metan.dag as dag
@@ -31,6 +47,149 @@ class MetanObject(object):
 
         if len(args) == 0:
             raise MetanArgumentError("{0}() takes one or more arguments (0 given)".format(cls.__name__))
+
+
+        arg0 = args[0]
+        if isinstance(arg0, basestring):
+            if u"." in arg0:
+                if cls.__name__ == MetanObject.__name__:
+                    return Attribute(arg0)
+
+                attrnames = arg0.split(u".")
+                arg0 = attrnames[0]
+                _attrname = attrnames[1]
+                _dependnode = to_dependencynode(arg0)
+                if u"[" in _attrname:
+                    _attrname = _attrname.split(u"[")
+                    _plug = _dependnode.findPlug(_dependnode.attribute(_attrname[0]), False)
+                    _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+                else:
+                    _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+
+                for _attrname in attrnames[2:]:
+                    if u"[" in _attrname:
+                        _attrname = _attrname.split(u"[")
+                        _plug = _plug.child(_dependnode.attribute(_attrname[0]))
+                        _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+                    else:
+                        _plug = _plug.child(_dependnode.attribute(_attrname))
+
+
+                _attribute = _plug.attribute()
+                _api_objects["_mDependNode"] = _dependnode
+                _api_objects["_MPlug"] = _plug
+                _api_objects["_MObject"] = _attribute
+                for k, v in _api_objects.items():
+                    _newobj.__setattr__(k, v)
+                return _newobj
+
+        elif isinstance(arg0, om.MPlug):
+            _plug = arg0
+            _dependnode = om.MFnDependencyNode(_plug.node())
+            if len(args) == 2:
+                if _plug.isElement:
+                    _plug = _plug.child(_dependnode.attribute(args[1]))
+                elif _plug.isArray:
+                    _plug = _plug.elementByLogicalIndex(0)
+                    _plug = _plug.child(_dependnode.attribute(args[1]))
+                else:
+                    _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
+
+            _attribute = _plug.attribute()
+            _api_objects["_mDependNode"] = _dependnode
+            _api_objects["_MPlug"] = _plug
+            _api_objects["_MObject"] = _attribute
+            for k, v in _api_objects.items():
+                _newobj.__setattr__(k, v)
+            return _newobj
+
+
+        elif isinstance(arg0, Attribute):
+            _mattr = arg0
+            _attrname = args[1]
+            _pplug = _mattr._MPlug
+            _dependnode = _mattr._mDependNode
+
+            if _pplug.isElement:
+                if u"[" in _attrname:
+                    _attrname = _attrname.split(u"[")
+                    _plug = _pplug.child(_dependnode.attribute(_attrname[0]))
+                    _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+                else:
+                    _plug = _pplug.child(_dependnode.attribute(_attrname))
+
+            elif _pplug.isArray:
+                _plug = _pplug.elementByLogicalIndex(0)
+                if u"[" in _attrname:
+                    _attrname = _attrname.split(u"[")
+                    _plug = _plug.child(_dependnode.attribute(_attrname[0]))
+                    _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+                else:
+                    _plug = _plug.child(_dependnode.attribute(_attrname))
+
+            else:
+                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+                # print(_plug.name())
+                """
+                todo: Arrayのインデックスが[-1]になる問題
+
+                m = mtn.M(u"pCubeShape1")
+                # 全部文字列で取得するなら大丈夫
+                mtn.M(u"pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB").name()
+
+                # 以下のケースはエラー発生
+                m.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB.name()
+                m.attr("vertexColor[0]").attr("vertexFaceColor")[0].attr("vertexFaceColorRGB").attr("vertexFaceColorB").name()
+
+                """
+
+            # if _pplug.isElement:
+            #     _plug = _pplug.child(_dependnode.attribute(args[1]))
+            # elif _pplug.isArray:
+            #     _plug = _pplug.elementByLogicalIndex(0)
+            #     _plug = _plug.child(_dependnode.attribute(args[1]))
+            # else:
+            #     _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
+
+            _attribute = _plug.attribute()
+            _api_objects["_mDependNode"] = _dependnode
+            _api_objects["_MPlug"] = _plug
+            _api_objects["_MObject"] = _attribute
+            for k, v in _api_objects.items():
+                _newobj.__setattr__(k, v)
+            return _newobj
+
+        if len(args) == 2:
+            _attrname = args[1]
+            if cls.__name__ == MetanObject.__name__:
+                return Attribute(arg0, _attrname)
+
+            if isinstance(arg0, basestring):
+                _dependnode = to_dependencynode(arg0)
+            elif isinstance(arg0, om.MFnDependencyNode):
+                _dependnode = arg0
+
+            if u"[" in _attrname:
+                _attrname = _attrname.split(u"[")
+                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname[0]), False)
+                _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+            else:
+                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+
+
+            _attribute = _plug.attribute()
+            _api_objects["_mDependNode"] = _dependnode
+            _api_objects["_MPlug"] = _plug
+            _api_objects["_MObject"] = _attribute
+            # _cache["_isCompound"] = _plug.isCompound
+            # if _cache["_isCompound"]:
+            #     _cache["_numChildren"] = _plug.numChildren()
+            # _cache["_apiType"] = _attribute.apiType()
+            # _cache["_apiTypeStr"] = _attribute.apiTypeStr
+            for k, v in _api_objects.items():
+                _newobj.__setattr__(k, v)
+            return _newobj
+
 
         arg = args[0]
         if isinstance(arg, basestring):
@@ -45,11 +204,9 @@ class MetanObject(object):
                 elif _api_objects["_MObject"].apiType() == om.MFn.kJoint and cls.__name__ == MetanObject.__name__:
                     return dag.Joint(name)
                 _api_objects["_MObjectHandle"] = om.MObjectHandle(_api_objects["_MObject"])
-                # _transform = om.MFnTransform(_dagpath.transform())
             except TypeError:
                 pass
             try:
-                # _mo = sellist.getDependNode(0)
                 _api_objects["_MObject"] = sellist.getDependNode(0)
                 _api_objects["_MObjectHandle"] = om.MObjectHandle(_api_objects["_MObject"])
                 _api_objects["_mDependNode"] = om.MFnDependencyNode(_api_objects["_MObject"])
@@ -76,11 +233,11 @@ class MetanObject(object):
     def __init__(self, *args, **kws):
         pass
 
-    def __repr__(self):
-        if self.metan_class:
-            return '<Meta> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.__name(), self.nodeType())
-        else:
-            return '<Standard> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.__name(), self.nodeType())
+    # def __repr__(self):
+    #     if self.metan_class:
+    #         return '<Meta> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.__name(), self.nodeType())
+    #     else:
+    #         return '<Standard> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.__name(), self.nodeType())
 
     def __str__(self):
         return self.__repr__()
@@ -108,9 +265,10 @@ class MetanObject(object):
             raise MetanObjectNotFoundError(self.__name())
 
 
-class Attribute(object):
+class Attribute(MetanObject):
 
-    def __new__(cls, *args, **kws):
+    # def __new__(cls, *args, **kws):
+    def __aaaaa__(cls, *args, **kws):
         u"""
         args[0] == om.MFnDependecyNode or Attribute or om.MPlug
 
