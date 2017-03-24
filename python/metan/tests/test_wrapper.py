@@ -2,7 +2,7 @@
 import unittest
 import maya.cmds as cmds
 import maya.mel as mel
-import metan
+import metan.core as mtn
 
 
 class TestScene(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestScene(unittest.TestCase):
         cmds.file(new=True, f=True)
         cube = cmds.polyCube()[0]
         print cube
-        m = metan.M(u"pCube1")
+        m = mtn.M(u"pCube1")
         print 'm.t.get()', m.t.get()
         print 'm.translate.get()', m.translate.get()
         print 'm.tx.get()', m.tx.get()
@@ -49,7 +49,7 @@ class TestScene(unittest.TestCase):
         print "="*20
 
         cmds.circle()
-        m = metan.M(u"nurbsCircleShape1")
+        m = mtn.M(u"nurbsCircleShape1")
         assert(m.wn.get() == [[0.0, 0.0, 1.0]])
         assert(m.attr("wn").get() == [[0.0, 0.0, 1.0]])
         assert(m.worldNormal.get() == [[0.0, 0.0, 1.0]])
@@ -107,7 +107,7 @@ class TestScene(unittest.TestCase):
         assert(m.objectColorR.get() == 0.0)
         assert(m.attr("objectColorR").get() == 0.0)
 
-        m = metan.M(u"pCubeShape1")
+        m = mtn.M(u"pCubeShape1")
         assert(m.vertexColor[0].vertexFaceColor[0].get() == [[0.0, 0.0, 0.0], 1.0])
         assert(m.attr("vertexColor")[0].vertexFaceColor[0].get() == [[0.0, 0.0, 0.0], 1.0])
         assert(m.attr("vertexColor")[0].attr("vertexFaceColor")[0].get() == [[0.0, 0.0, 0.0], 1.0])
@@ -126,7 +126,7 @@ class TestScene(unittest.TestCase):
         mel.eval("curve -d 3 -p -6.875966 0 1.086021 -p -5.392687 0 2.925972 -p -2.426129 0 6.605875 \
          -p 5.887674 0 7.227014 -p 2.9318 0 2.277118 -p -8.971029 0 -5.450958 -p 1.340971 0 4.394752 \
          -p -1.974355 0 6.056083 -p -3.632019 0 6.886748 -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 6 -k 6 ;")
-        m = metan.M(u"curveShape1")
+        m = mtn.M(u"curveShape1")
         print m.cp
         print m.attr("cp")
         print m.attr("controlPoints")
@@ -143,15 +143,4 @@ class TestScene(unittest.TestCase):
         self.test_getset()
 
 
-class TestScene2(unittest.TestCase):
-
-    def test_getset(self):
-        cmds.file(new=True, f=True)
-        cube = cmds.polyCube()[0]
-        print cube
-        m = metan.M("pCube1")
-        print 'm.t.x.get()', m.t.x.get()
-
-    def runTest(self):
-        self.test_getset()
 
