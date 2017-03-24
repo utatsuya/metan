@@ -12,7 +12,8 @@ class Attribute(object):
         args[0] == om.MFnDependecyNode or Attribute or om.MPlug
 
         """
-        _api_objects = dict([(k, None) for k in ["_mDependNode", "_mPlug", "_mObject", "_mHandle"]])
+        _api_objects = dict([(k, None) for k in ["_ApiCls", "_MFn", "_mDependNode", "_MPlug",
+                                                 "_MObject", "_MObjectHandle"]])
         _cache = dict([(k, None) for k in ["_isCompound", "_numChildren", "_apiType", "_apiTypeStr"]])
         newobj = super(cls.__class__, cls).__new__(cls)
 
@@ -28,7 +29,7 @@ class Attribute(object):
 
         elif isinstance(args[0], Attribute):
             _mattr = args[0]
-            _pplug = _mattr._mPlug
+            _pplug = _mattr._MPlug
             _dependnode = _mattr._mDependNode
 
             if _pplug.isElement:
@@ -49,8 +50,8 @@ class Attribute(object):
         _attribute = _plug.attribute()
 
         _api_objects["_mDependNode"] = _dependnode
-        _api_objects["_mPlug"] = _plug
-        _api_objects["_mObject"] = _attribute
+        _api_objects["_MPlug"] = _plug
+        _api_objects["_MObject"] = _attribute
         _cache["_isCompound"] = _plug.isCompound
         if _cache["_isCompound"]:
             _cache["_numChildren"] = _plug.numChildren()
@@ -70,7 +71,7 @@ class Attribute(object):
             return Attribute(self, attr)
         except RuntimeError:
             try:
-                _attr = self._mPlug.partialName()+attr
+                _attr = self._MPlug.partialName()+attr
                 return Attribute(self, _attr)
             except RuntimeError:
                 raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
@@ -92,7 +93,7 @@ class Attribute(object):
             yield self.__getitem__(i)
 
     def __getitem__(self, index):
-        return Attribute(self._mPlug.elementByLogicalIndex(index))
+        return Attribute(self._MPlug.elementByLogicalIndex(index))
 
     def __len__(self):
         size = self.size()
@@ -102,15 +103,15 @@ class Attribute(object):
             raise TypeError("object of type '{0}' has no len()".format(self.__class__.__name__))
 
     def size(self):
-        _mplug = self._mPlug
-        if self._mPlug.isArray:
+        _mplug = self._MPlug
+        if self._MPlug.isArray:
             return _mplug.numElements()
 
     def __name(self):
         return self.name().split(".")[-1]
 
     def name(self):
-        return self._mPlug.name()
+        return self._MPlug.name()
 
     def longName(self):
         return self.attrName(longName=True)
@@ -124,11 +125,11 @@ class Attribute(object):
     def attrName(self, longName=False):
         if longName:
             return self.__name()
-        return self._mPlug.partialName()
+        return self._MPlug.partialName()
 
     def getChildren(self):
-        if self._mPlug.isCompound:
-            return [Attribute(self._mPlug.child(i)) for i in range(self._mPlug.numChildren())]
+        if self._MPlug.isCompound:
+            return [Attribute(self._MPlug.child(i)) for i in range(self._MPlug.numChildren())]
         else:
             raise TypeError("Data type is not valid here")
 
@@ -216,7 +217,7 @@ class Attribute(object):
             return res
 
     def get(self):
-        return self._getPlugValue(self._mPlug)
+        return self._getPlugValue(self._MPlug)
 
     def set(self, value):
         self.__setUseCmd(value)
@@ -226,11 +227,11 @@ class Attribute(object):
 
     def __setUseCmd(self, value):
         # todo: 型に応じて適切な値をset cmds.setAttr()を利用する
-        cmds.setAttr(self._mPlug.name(), value)
+        cmds.setAttr(self._MPlug.name(), value)
 
     def __setUseApi(self, value):
         # todo: 型に応じて適切な値をset apiでsetする undo非サポート
-        self._mPlug.setDouble(value)
+        self._MPlug.setDouble(value)
 
     # def valid(self):
     #     return self._mHandle.isValid()

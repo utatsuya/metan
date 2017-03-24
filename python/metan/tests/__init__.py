@@ -30,6 +30,7 @@ def reloader():
     for mp in modpath:
         mod = __import__(mp, globals(), locals(), ["*"])
         reload(mod)
+        print "reloaded.",mod
 
 
 def run():
