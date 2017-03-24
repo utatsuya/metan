@@ -2,8 +2,7 @@
 from __future__ import print_function, absolute_import, division
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
-from .import attribute as att
-from . import dag as dag
+import metan.attribute as att
 
 
 def to_object(name):
@@ -22,6 +21,7 @@ class MetanObject(object):
     metan_class = None
 
     def __new__(cls, *args, **kws):
+        import metan.dag as dag
 
         _api_objects = dict([(k, None) for k in ["_mDagPath", "_mDependNode", "_mObject", "_mHandle"]])
         _newobj = super(cls.__class__, cls).__new__(cls)
@@ -100,16 +100,3 @@ class MetanObject(object):
     def isValid(self):
         return self._mHandle.isValid()
 
-class DependNode(MetanObject):
-    pass
-
-class MetanClass(MetanObject):
-
-    def testn(self):
-        pass
-
-
-class OrgMetaNode(MetanClass):
-
-    def testn(self):
-        pass

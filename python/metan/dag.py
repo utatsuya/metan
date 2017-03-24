@@ -1,17 +1,25 @@
 # -*- coding:utf-8 -*-
 from __future__ import print_function, absolute_import, division
-import maya.cmds as cmds
-import maya.api.OpenMaya as om
-from metan.wrapclass import MetanObject, DependNode
+from metan.dependency import DependNode
 
 class DagNode(DependNode):
-    def testn(self):
-        print(self.__class__)
+    u""""""
 
 class Transform(DagNode):
-    def testn(self):
-        print(self.__class__)
+    u""""""
 
 class Joint(Transform):
-    def testn(self):
-        print(self.__class__)
+    u""""""
+
+class Mesh(DagNode):pass
+class Camera(DagNode):pass
+class NurbsCurve(DagNode):pass
+class NurbsSurface(DagNode):pass
+class ObjectSet(DagNode):pass
+class AnimLayer(ObjectSet):pass
+class Constraint(Transform):pass
+class IkEffector(Transform):pass
+class IkHandle(Transform):pass
+
+
+
