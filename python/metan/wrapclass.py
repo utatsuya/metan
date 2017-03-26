@@ -91,8 +91,6 @@ class MetanObject(object):
                 #   cls(u"pCube1.aaa")
                 else:
                     _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
-                    # if _plug.isArray:
-                    #     _plug = _plug.elementByLogicalIndex(0)
 
                 for _attrname in attrnames[2:]:
 
@@ -109,8 +107,6 @@ class MetanObject(object):
                             _plug = _plug.child(_dependnode.attribute(_attrname))
                         else:
                             _plug = _plug.child(_dependnode.attribute(_attrname))
-                        # if _plug.isArray:
-                        #     _plug = _plug.elementByLogicalIndex(0)
 
                 return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
@@ -161,8 +157,6 @@ class MetanObject(object):
                     _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
             return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
-
-
 
 
 
