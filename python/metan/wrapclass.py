@@ -91,6 +91,8 @@ class MetanObject(object):
                 #   cls(u"pCube1.aaa")
                 else:
                     _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+                    # if _plug.isArray:
+                    #     _plug = _plug.elementByLogicalIndex(0)
 
                 for _attrname in attrnames[2:]:
 
@@ -102,7 +104,13 @@ class MetanObject(object):
 
                     #   cls(u"pCube1.aaa.bbb")
                     else:
-                        _plug = _plug.child(_dependnode.attribute(_attrname))
+                        if _plug.isCompound and _plug.isArray:
+                            _plug = _plug.elementByLogicalIndex(0)
+                            _plug = _plug.child(_dependnode.attribute(_attrname))
+                        else:
+                            _plug = _plug.child(_dependnode.attribute(_attrname))
+                        # if _plug.isArray:
+                        #     _plug = _plug.elementByLogicalIndex(0)
 
                 return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
@@ -154,51 +162,6 @@ class MetanObject(object):
 
             return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
-        # Case : Attribute
-        #   cls(Attribute, u"aaa")
-        #   cls(Attribute, u"aaa.bbb")
-        #   cls(Attribute, u"aaa[0]")
-        #   cls(Attribute, u"aaa[0].bbb")
-        elif isinstance(arg0, Attribute):
-            _mattr = arg0
-            _attrname = args[1]
-            _pplug = _mattr._MPlug
-            _dependnode = _mattr._mDependNode
-
-            if _pplug.isElement:
-                if u"[" in _attrname:
-                    _attrname = _attrname.split(u"[")
-                    _plug = _pplug.child(_dependnode.attribute(_attrname[0]))
-                    _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
-                else:
-                    _plug = _pplug.child(_dependnode.attribute(_attrname))
-
-            elif _pplug.isArray:
-                _plug = _pplug.elementByLogicalIndex(0)
-                if u"[" in _attrname:
-                    _attrname = _attrname.split(u"[")
-                    _plug = _plug.child(_dependnode.attribute(_attrname[0]))
-                    _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
-                else:
-                    _plug = _plug.child(_dependnode.attribute(_attrname))
-
-            else:
-                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
-                # print(_plug.name())
-                """
-                todo: Arrayのインデックスが[-1]になる問題
-
-                m = mtn.M(u"pCubeShape1")
-                # 全部文字列で取得するなら大丈夫
-                mtn.M(u"pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB").name()
-
-                # 以下のケースはエラー発生
-                m.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB.name()
-                m.attr("vertexColor[0]").attr("vertexFaceColor")[0].attr("vertexFaceColorRGB").attr("vertexFaceColorB").name()
-
-                """
-
-            return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
 
 
@@ -207,7 +170,7 @@ class MetanObject(object):
         self.validCheck()
         attrname = self.name()+u"."+attr
         if cmds.objExists(attrname):
-            return Attribute(self._mDependNode, attr)
+            return Attribute(attrname)
         else:
             raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
@@ -250,14 +213,17 @@ class MetanObject(object):
 class Attribute(MetanObject):
 
     def attr(self, attr):
-        try:
-            return Attribute(self, attr)
-        except RuntimeError:
-            try:
-                _attr = self._MPlug.partialName()+attr
-                return Attribute(self, _attr)
-            except RuntimeError:
+        # self.validCheck()
+        attrname = self.name()+u"."+attr
+        if cmds.objExists(attrname):
+            return Attribute(attrname)
+        else:
+            attrname = self.name() + u"." + self._MPlug.partialName() + attr
+            if cmds.objExists(attrname):
+                return Attribute(attrname)
+            else:
                 raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
+
 
     def __getattr__(self, attr):
         return self.attr(attr)

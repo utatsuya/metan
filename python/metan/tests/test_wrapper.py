@@ -124,7 +124,7 @@ class TestScene(unittest.TestCase):
         assert(m.attr("vertexColor[0]").attr("vertexFaceColor")[0].attr("vertexFaceColorRGB").get() == [0.0, 0.0, 0.0])
         assert(m.attr("vertexColor[0]").attr("vertexFaceColor[0]").attr("vertexFaceColorRGB").get() == [0.0,0.0,0.0])
 
-        # bad:: assert(m.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB.get() == 0.0)
+        assert(m.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB.get() == 0.0)
 
         mel.eval("curve -d 3 -p -6.875966 0 1.086021 -p -5.392687 0 2.925972 -p -2.426129 0 6.605875 \
          -p 5.887674 0 7.227014 -p 2.9318 0 2.277118 -p -8.971029 0 -5.450958 -p 1.340971 0 4.394752 \
@@ -152,8 +152,8 @@ class TestScene(unittest.TestCase):
         assert(mtn.M(u"pCube1.wm").name() == u'pCube1.worldMatrix')
         assert(mtn.M(u"pCube1.wm[0]").name() == u'pCube1.worldMatrix[0]')
 
-        # bad:: assert(mtn.M(u"pCubeShape1.vertexColor.vertexFaceColor.vertexFaceColorRGB.vertexFaceColorB").name()
-        #        == u'pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorB')
+        assert(mtn.M(u"pCubeShape1.vertexColor.vertexFaceColor.vertexFaceColorRGB.vertexFaceColorB").name()
+                == u'pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorB')
 
         assert(mtn.M(u"pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB").name()
                == u'pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorB')
