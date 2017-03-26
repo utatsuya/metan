@@ -38,10 +38,26 @@ class MetanObject(object):
         _newobj = super(cls.__class__, cls).__new__(cls)
 
         if len(args) == 0:
-            raise MetanArgumentError("{0}() takes one or more arguments (0 given)".format(cls.__name__))
+            raise MetanArgumentError("{0}() takes 1 or 2 arguments (0 given)".format(cls.__name__))
+        elif len(args) > 2:
+            raise MetanArgumentError("{0}() takes at most 2 arguments ({1} given)".format(cls.__name__, len(args)))
 
 
         arg0 = args[0]
+
+        # Case : Attribute
+        #   cls(u"pCube1","aaa")
+        #   cls(u"pCube1","aaa[0]")
+        #   cls(MFnDependencyNode,"aaa")
+        #   cls(MFnDependencyNode,"aaa[0]")
+        if len(args) == 2:
+            if isinstance(arg0, om.MFnDependencyNode):
+                arg0 = arg0.name() + u"." + unicode(args[1])
+            elif isinstance(arg0, basestring):
+                arg0 = arg0 + u"." + unicode(args[1])
+
+            if cls.__name__ == MetanObject.__name__:
+                return Attribute(arg0)
 
         # Case : Node or Attribute
         #   cls(u"pCube1")
@@ -184,30 +200,6 @@ class MetanObject(object):
 
             return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
-        # Case : Attribute
-        #   cls(u"pCube1","aaa")
-        #   cls(u"pCube1","aaa[0]")
-        #   cls(MFnDependencyNode,"aaa")
-        #   cls(MFnDependencyNode,"aaa[0]")
-        if len(args) == 2:
-            _attrname = args[1]
-            if cls.__name__ == MetanObject.__name__:
-                return Attribute(arg0, _attrname)
-
-            if isinstance(arg0, basestring):
-                _dependnode = to_dependencynode(arg0)
-            elif isinstance(arg0, om.MFnDependencyNode):
-                _dependnode = arg0
-
-            if u"[" in _attrname:
-                _attrname = _attrname.split(u"[")
-                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname[0]), False)
-                _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
-            else:
-                _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
-
-
-            return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
 
 
