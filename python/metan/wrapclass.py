@@ -2,16 +2,8 @@
 from __future__ import print_function, absolute_import, division
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
-# import metan.attribute as att
 from metan.exception import *
 
-def to_mobject(name):
-    sellist = om.MSelectionList()
-    sellist.add(name)
-    try:
-        return sellist.getDependNode(0)
-    except TypeError:
-        return
 
 def to_dependencynode(name):
     sellist = om.MSelectionList()
@@ -20,16 +12,6 @@ def to_dependencynode(name):
         return om.MFnDependencyNode(sellist.getDependNode(0))
     except TypeError:
         return
-
-def to_api_object(name):
-    # sellist = om.MGlobal.getSelectionListByName(name)
-    sellist = om.MSelectionList()
-    sellist.add(name)
-    try:
-        return sellist.getDagPath(0)
-    except TypeError:
-        mo = sellist.getDependNode(0)
-        return om.MFnDependencyNode(mo)
 
 
 class MetanObject(object):
@@ -143,13 +125,6 @@ class MetanObject(object):
 
                 """
 
-            # if _pplug.isElement:
-            #     _plug = _pplug.child(_dependnode.attribute(args[1]))
-            # elif _pplug.isArray:
-            #     _plug = _pplug.elementByLogicalIndex(0)
-            #     _plug = _plug.child(_dependnode.attribute(args[1]))
-            # else:
-            #     _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
             _attribute = _plug.attribute()
             _api_objects["_mDependNode"] = _dependnode
@@ -181,11 +156,6 @@ class MetanObject(object):
             _api_objects["_mDependNode"] = _dependnode
             _api_objects["_MPlug"] = _plug
             _api_objects["_MObject"] = _attribute
-            # _cache["_isCompound"] = _plug.isCompound
-            # if _cache["_isCompound"]:
-            #     _cache["_numChildren"] = _plug.numChildren()
-            # _cache["_apiType"] = _attribute.apiType()
-            # _cache["_apiTypeStr"] = _attribute.apiTypeStr
             for k, v in _api_objects.items():
                 _newobj.__setattr__(k, v)
             return _newobj
@@ -397,9 +367,6 @@ class Attribute(MetanObject):
     def _getPlugValue(self, plug):
         _obj = plug.attribute()
         _apitype = _obj.apiType()
-        # _obj = self._mObject
-        # _apitype = self._apiType
-        # print(_obj.apiTypeStr, plug.name())
 
         if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float, om.MFn.kAttribute4Double,
                         om.MFn.kAttribute2Double, om.MFn.kAttribute2Float]:
@@ -456,16 +423,11 @@ class Attribute(MetanObject):
         elif _apitype == om.MFn.kTypedAttribute:
             _mfnattr = om.MFnTypedAttribute(_obj)
             _type = _mfnattr.attrType()
-            # print (_type, "attrType()")
             if _type == om.MFnData.kString:
                 return plug.asString()
             elif _type == om.MFnData.kMatrix:
-                # print(plug.name(), plug.isArray, plug.isElement)
                 if plug.isArray:
                     return om.MFnMatrixData(plug.elementByLogicalIndex(0).asMObject()).matrix()
-                # if plug.isElement:
-                #     print(plug.array())
-                #     return om.MFnMatrixData(plug.asMObject()).matrix()
                 return om.MFnMatrixData(plug.asMObject()).matrix()
 
         elif _apitype == om.MFn.kCompoundAttribute:
@@ -494,5 +456,3 @@ class Attribute(MetanObject):
         # todo: 型に応じて適切な値をset apiでsetする undo非サポート
         self._MPlug.setDouble(value)
 
-        # def valid(self):
-        #     return self._mHandle.isValid()
