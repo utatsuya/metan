@@ -14,6 +14,15 @@ def to_dependencynode(name):
     except TypeError:
         return
 
+def set_api_objects(_plug, _dependnode, _api_objects, _newobj):
+    _attribute = _plug.attribute()
+    _api_objects["_mDependNode"] = _dependnode
+    _api_objects["_MPlug"] = _plug
+    _api_objects["_MObject"] = _attribute
+    for k, v in _api_objects.items():
+        _newobj.__setattr__(k, v)
+    return _newobj
+
 
 class MetanObject(object):
     u"""
@@ -79,13 +88,7 @@ class MetanObject(object):
                     else:
                         _plug = _plug.child(_dependnode.attribute(_attrname))
 
-                _attribute = _plug.attribute()
-                _api_objects["_mDependNode"] = _dependnode
-                _api_objects["_MPlug"] = _plug
-                _api_objects["_MObject"] = _attribute
-                for k, v in _api_objects.items():
-                    _newobj.__setattr__(k, v)
-                return _newobj
+                return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
             # Case : Node
             #   cls(u"pCube1")
@@ -133,13 +136,7 @@ class MetanObject(object):
                 else:
                     _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
 
-            _attribute = _plug.attribute()
-            _api_objects["_mDependNode"] = _dependnode
-            _api_objects["_MPlug"] = _plug
-            _api_objects["_MObject"] = _attribute
-            for k, v in _api_objects.items():
-                _newobj.__setattr__(k, v)
-            return _newobj
+            return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
         # Case : Attribute
         #   cls(Attribute, u"aaa")
@@ -185,14 +182,7 @@ class MetanObject(object):
 
                 """
 
-
-            _attribute = _plug.attribute()
-            _api_objects["_mDependNode"] = _dependnode
-            _api_objects["_MPlug"] = _plug
-            _api_objects["_MObject"] = _attribute
-            for k, v in _api_objects.items():
-                _newobj.__setattr__(k, v)
-            return _newobj
+            return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
         # Case : Attribute
         #   cls(u"pCube1","aaa")
@@ -217,13 +207,7 @@ class MetanObject(object):
                 _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
 
 
-            _attribute = _plug.attribute()
-            _api_objects["_mDependNode"] = _dependnode
-            _api_objects["_MPlug"] = _plug
-            _api_objects["_MObject"] = _attribute
-            for k, v in _api_objects.items():
-                _newobj.__setattr__(k, v)
-            return _newobj
+            return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
 
 
 
