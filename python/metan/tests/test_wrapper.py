@@ -12,6 +12,8 @@ class TestScene(unittest.TestCase):
         cube = cmds.polyCube()[0]
         print cube
         m = mtn.M(u"pCube1")
+
+
         print 'm.t.get()', m.t.get()
         print 'm.translate.get()', m.translate.get()
         print 'm.tx.get()', m.tx.get()
@@ -122,15 +124,15 @@ class TestScene(unittest.TestCase):
         assert(m.attr("vertexColor[0]").attr("vertexFaceColor")[0].attr("vertexFaceColorRGB").get() == [0.0, 0.0, 0.0])
         assert(m.attr("vertexColor[0]").attr("vertexFaceColor[0]").attr("vertexFaceColorRGB").get() == [0.0,0.0,0.0])
 
-        # assert(m.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB.get() == 0.0)
+        # bad:: assert(m.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB.get() == 0.0)
 
         mel.eval("curve -d 3 -p -6.875966 0 1.086021 -p -5.392687 0 2.925972 -p -2.426129 0 6.605875 \
          -p 5.887674 0 7.227014 -p 2.9318 0 2.277118 -p -8.971029 0 -5.450958 -p 1.340971 0 4.394752 \
          -p -1.974355 0 6.056083 -p -3.632019 0 6.886748 -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 6 -k 6 ;")
         m = mtn.M(u"curveShape1")
-        print m.cp
-        print m.attr("cp")
-        print m.attr("controlPoints")
+        assert(m.cp.name() == u"curveShape1.controlPoints")
+        assert(m.attr("cp").name() == u"curveShape1.controlPoints")
+        assert(m.attr("controlPoints").name() == u"curveShape1.controlPoints")
         assert(m.cp.size() == 9)
         assert(m.attr("cp").size() == 9)
         assert(m.attr("controlPoints").size() == 9)
@@ -138,7 +140,23 @@ class TestScene(unittest.TestCase):
         assert(len(m.attr("cp")) == 9)
         assert(len(m.attr("controlPoints")) == 9)
         for a in m.controlPoints:
-            print a, a.get()
+            print a.name(), a.get()
+
+
+        assert(mtn.M(u"pCube1.t").name() == u'pCube1.translate')
+        assert(mtn.M(u"pCube1.translate").name() == u'pCube1.translate')
+        assert(mtn.M(u"pCube1.t.tx").name() == u'pCube1.translateX')
+        assert(mtn.M(u"pCube1.translate.translateX").name() == u'pCube1.translateX')
+        assert(mtn.M(u"pCube1.tx").name() == u'pCube1.translateX')
+        assert(mtn.M(u"pCube1.translateX").name() == u'pCube1.translateX')
+        assert(mtn.M(u"pCube1.wm").name() == u'pCube1.worldMatrix')
+        assert(mtn.M(u"pCube1.wm[0]").name() == u'pCube1.worldMatrix[0]')
+
+        # bad:: assert(mtn.M(u"pCubeShape1.vertexColor.vertexFaceColor.vertexFaceColorRGB.vertexFaceColorB").name()
+        #        == u'pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorB')
+
+        assert(mtn.M(u"pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB").name()
+               == u'pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorB')
 
     def runTest(self):
         self.test_getset()
