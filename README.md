@@ -65,7 +65,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   # Result: u'pCube1.translateX' # 
   
   m.t.get()
-  # Result: maya.api.OpenMaya.MVector(0, 0, 0) # 
+  # Result: [0, 0, 0] # 
   
   m.tx.get()
   # result : 0.0 # 
