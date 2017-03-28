@@ -48,6 +48,9 @@ class TestScene(unittest.TestCase):
         print 'm.attr("parentInverseMatrix")[0].get()', m.attr("parentInverseMatrix")[0].get()
         print 'm.attr("pim[0]").get()', m.attr("pim[0]").get()
         print 'm.attr("parentInverseMatrix[0]").get()', m.attr("parentInverseMatrix[0]").get()
+
+        assert(repr(m.t.getChildren()) == u'[Attribute("translateX"), Attribute("translateY"), Attribute("translateZ")]')
+
         print "="*20
 
         cmds.circle()
@@ -158,8 +161,26 @@ class TestScene(unittest.TestCase):
         assert(mtn.M(u"pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorRGB.vertexFaceColorB").name()
                == u'pCubeShape1.vertexColor[0].vertexFaceColor[0].vertexFaceColorB')
 
+
+
+    def test_types(self):
+        print("start : node type test.")
+        cmds.file(new=True, f=True)
+
+        m = mtn.M(cmds.polyCube()[0])
+        assert(m.nodeType() == u'transform')
+
+        j = mtn.M(cmds.createNode(u"joint"))
+        assert(j.nodeType() == u'joint')
+
+        t = mtn.M(u"time1")
+        assert(t.nodeType() == u'time')
+
+        print("end : node type test.")
+
     def runTest(self):
         self.test_getset()
+        self.test_types()
 
 
 

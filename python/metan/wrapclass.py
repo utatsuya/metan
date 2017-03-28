@@ -14,13 +14,12 @@ def to_dependencynode(name):
     except TypeError:
         return
 
-def set_api_objects(_plug, _dependnode, _api_objects, _newobj):
-    _attribute = _plug.attribute()
-    _api_objects["_mDependNode"] = _dependnode
-    _api_objects["_MPlug"] = _plug
-    _api_objects["_MObject"] = _attribute
-    for k, v in _api_objects.items():
-        _newobj.__setattr__(k, v)
+def set_api_objects(cls, api_objs):
+    _newobj = super(cls.__class__, cls).__new__(cls)
+    for k, _obj in api_objs.items():
+        if _obj:
+            _newobj.__setattr__(k, _obj)
+
     return _newobj
 
 
@@ -32,10 +31,13 @@ class MetanObject(object):
 
     def __new__(cls, *args, **kws):
         import metan.dag as dag
+        import metan.dependency as dep
 
-        _api_objects = dict([(k, None) for k in ["_ApiCls", "_MFn", "_MDagPath", "_MObject",
-                                                 "_MObjectHandle", "_mDependNode"]])
-        _newobj = super(cls.__class__, cls).__new__(cls)
+        mobj = None
+        mobjh = None
+        mdag = None
+        mfn = None
+        mplg = None
 
         if len(args) == 0:
             raise MetanArgumentError("{0}() takes 1 or 2 arguments (0 given)".format(cls.__name__))
@@ -79,36 +81,38 @@ class MetanObject(object):
                 attrnames = arg0.split(u".")
                 arg0 = attrnames[0]
                 _attrname = attrnames[1]
-                _dependnode = to_dependencynode(arg0)
+                mfn = to_dependencynode(arg0)
 
                 #   cls(u"pCube1.aaa[0]")
                 if u"[" in _attrname:
 
                     _attrname = _attrname.split(u"[")
-                    _plug = _dependnode.findPlug(_dependnode.attribute(_attrname[0]), False)
-                    _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+                    mplg = mfn.findPlug(mfn.attribute(_attrname[0]), False)
+                    mplg = mplg.elementByLogicalIndex(int(_attrname[-1][-2]))
 
                 #   cls(u"pCube1.aaa")
                 else:
-                    _plug = _dependnode.findPlug(_dependnode.attribute(_attrname), False)
+                    mplg = mfn.findPlug(mfn.attribute(_attrname), False)
 
                 for _attrname in attrnames[2:]:
 
                     #   cls(u"pCube1.aaa[0].bbb")
                     if u"[" in _attrname:
                         _attrname = _attrname.split(u"[")
-                        _plug = _plug.child(_dependnode.attribute(_attrname[0]))
-                        _plug = _plug.elementByLogicalIndex(int(_attrname[-1][-2]))
+                        mplg = mplg.child(mfn.attribute(_attrname[0]))
+                        mplg = mplg.elementByLogicalIndex(int(_attrname[-1][-2]))
 
                     #   cls(u"pCube1.aaa.bbb")
                     else:
-                        if _plug.isCompound and _plug.isArray:
-                            _plug = _plug.elementByLogicalIndex(0)
-                            _plug = _plug.child(_dependnode.attribute(_attrname))
+                        if mplg.isCompound and mplg.isArray:
+                            mplg = mplg.elementByLogicalIndex(0)
+                            mplg = mplg.child(mfn.attribute(_attrname))
                         else:
-                            _plug = _plug.child(_dependnode.attribute(_attrname))
+                            mplg = mplg.child(mfn.attribute(_attrname))
 
-                return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
+                # return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
+                _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute()}
+                return set_api_objects(cls, _kws)
 
             # Case : Node
             #   cls(u"pCube1")
@@ -117,46 +121,53 @@ class MetanObject(object):
                 sellist = om.MSelectionList()
                 sellist.add(name)
                 try:
-                    _api_objects["_MDagPath"] = sellist.getDagPath(0)
-                    _api_objects["_MObject"] = _api_objects["_MDagPath"].node()
-                    if _api_objects["_MObject"].apiType() == om.MFn.kTransform and cls.__name__ == MetanObject.__name__:
-                        return dag.Transform(name)
-                    elif _api_objects["_MObject"].apiType() == om.MFn.kJoint and cls.__name__ == MetanObject.__name__:
-                        return dag.Joint(name)
-                    _api_objects["_MObjectHandle"] = om.MObjectHandle(_api_objects["_MObject"])
+                    mobj = sellist.getDependNode(0)
+                    if cls.__name__ == MetanObject.__name__:
+                        if mobj.apiType() == om.MFn.kTransform:
+                            return dag.Transform(name)
+                        elif mobj.apiType() == om.MFn.kJoint:
+                            return dag.Joint(name)
+                        else:
+                            return dep.DependNode(name)
+
+                    mobjh = om.MObjectHandle(mobj)
+                    mfn = om.MFnDependencyNode(mobj)
                 except TypeError:
                     pass
                 try:
-                    _api_objects["_MObject"] = sellist.getDependNode(0)
-                    _api_objects["_MObjectHandle"] = om.MObjectHandle(_api_objects["_MObject"])
-                    _api_objects["_mDependNode"] = om.MFnDependencyNode(_api_objects["_MObject"])
-                    _api_objects["_MFn"] = om.MFnDependencyNode(_api_objects["_MObject"])
+                    mdag = sellist.getDagPath(0)
+                    if cls.__name__ in [dag.Transform.__name__, dag.Joint.__name__]:
+                        mfn = om.MFnTransform(mobj)
                 except TypeError:
                     pass
 
-                for k, v in _api_objects.items():
-                    _newobj.__setattr__(k, v)
+                _kws = {"_MDagPath":mdag, "_MFn":mfn, "_MObjectHandle":mobjh, "_MObject":mobj}
+                return set_api_objects(cls, _kws)
 
-                return _newobj
 
         # Case : Attribute
         #   cls(MPlug)
         #   cls(MPlug, u"aaa")
         elif isinstance(arg0, om.MPlug):
             _plug = arg0
-            _dependnode = om.MFnDependencyNode(_plug.node())
+            mfn = om.MFnDependencyNode(_plug.node())
+
+            #   cls(MPlug)
+            if len(args) == 1:
+                mplg = _plug
 
             #   cls(MPlug, u"aaa")
-            if len(args) == 2:
+            elif len(args) == 2:
                 if _plug.isElement:
-                    _plug = _plug.child(_dependnode.attribute(args[1]))
+                    mplg = _plug.child(mfn.attribute(args[1]))
                 elif _plug.isArray:
                     _plug = _plug.elementByLogicalIndex(0)
-                    _plug = _plug.child(_dependnode.attribute(args[1]))
+                    mplg = _plug.child(mfn.attribute(args[1]))
                 else:
-                    _plug = _dependnode.findPlug(_dependnode.attribute(args[1]), False)
+                    mplg = mfn.findPlug(mfn.attribute(args[1]), False)
 
-            return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
+            _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute()}
+            return set_api_objects(cls, _kws)
 
 
 
@@ -172,24 +183,18 @@ class MetanObject(object):
         return self.attr(attr)
 
 
-    # def __repr__(self):
-    #     if self.metan_class:
-    #         return '<Meta> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.__name(), self.nodeType())
-    #     else:
-    #         return '<Standard> {0}("{1}", type="{2}")'.format(self.__class__.__name__, self.__name(), self.nodeType())
+    def __repr__(self):
+            return '{0}("{1}")'.format(self.__class__.__name__, self.__name())
 
     def __str__(self):
         return self.__repr__()
 
-    def nodeType(self):
-        if self._mDependNode:
-            return self._mDependNode.typeName
 
     def __name(self):
         if self._MDagPath:
             return self._MDagPath.partialPathName()
-        elif self._mDependNode:
-            return self._MDependNode.name()
+        elif self._MFn:
+            return self._MFn.name()
 
     def name(self):
         self.validCheck()
@@ -259,7 +264,7 @@ class Attribute(MetanObject):
     def longName(self):
         return self.attrName(longName=True)
 
-    def sortName(self):
+    def shortName(self):
         return self.attrName(longName=False)
 
     def nodeName(self):
@@ -299,13 +304,12 @@ class Attribute(MetanObject):
                     _plug = plug.child(i)
                     res.append(self._getPlugValue(_plug))
 
-            _child_apitype = _plug.attribute().apiType()
-
-            if _count == 3:
-                if _child_apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
-                    return om.MVector(res)
-                elif _child_apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
-                    return om.MVector(res)
+            # _child_apitype = _plug.attribute().apiType()
+            # if _count == 3:
+            #     if _child_apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
+            #         return om.MVector(res)
+            #     elif _child_apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
+            #         return om.MVector(res)
 
             return res
 
