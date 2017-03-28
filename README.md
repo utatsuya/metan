@@ -31,7 +31,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   # cubeのmatrixの値を1000回取得
   # pymel:1.56s, metan:0.023s
   
-  func = pm.PyNode(u"pCube1").t.m.get
+  func = pm.PyNode(u"pCube1").m.get
   print dbg.run_profile(func, count=1000)()
   func = mtn.M(u"pCube1").m.get
   print dbg.run_profile(func, count=1000)()
