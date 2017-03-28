@@ -2,8 +2,30 @@
 from __future__ import print_function, absolute_import, division
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
+import maya.api.OpenMayaAnim as oma
+from maya.OpenMaya import MGlobal as _api1_MGlobal
 from metan.exception import *
-# from metan.logger import log
+
+
+class TESTMObjectHandle(object):
+    u"""これは仮のMObjectHandleです
+    """
+    def __init__(self, *args, **kws):
+        pass
+    def isValid(self):
+        return True
+
+# todo: バージョンで分けるような処理はここじゃなくてファイルを別にする
+current_version = _api1_MGlobal.apiVersion()
+_MFn_MFnSkinCluster = om.MFnDependencyNode
+_MFn_MFnAnimCurve = om.MFnDependencyNode
+_MFn_MObjectHandle = TESTMObjectHandle
+
+if current_version >= 201600:
+    _MFn_MFnSkinCluster = oma.MFnSkinCluster
+    _MFn_MFnAnimCurve = oma.MFnAnimCurve
+    _MFn_MObjectHandle = om.MObjectHandle
+
 
 
 def to_dependencynode(name):
@@ -17,7 +39,6 @@ def to_dependencynode(name):
 def set_api_objects(cls, api_objs):
     _newobj = super(cls.__class__, cls).__new__(cls)
     for k, _obj in api_objs.items():
-        if _obj:
             _newobj.__setattr__(k, _obj)
 
     return _newobj
@@ -127,10 +148,15 @@ class MetanObject(object):
                             return dag.Transform(name)
                         elif mobj.apiType() == om.MFn.kJoint:
                             return dag.Joint(name)
+                        elif mobj.apiType() == om.MFn.kSkinClusterFilter:
+                            return dep.SkinCluster(name)
+                        elif mobj.hasFn(om.MFn.kAnimCurve):
+                            return dep.AnimCurve(name)
                         else:
                             return dep.DependNode(name)
 
-                    mobjh = om.MObjectHandle(mobj)
+                    # mobjh = om.MObjectHandle(mobj)
+                    mobjh = _MFn_MObjectHandle(mobj)
                     mfn = om.MFnDependencyNode(mobj)
                 except TypeError:
                     pass
@@ -138,6 +164,10 @@ class MetanObject(object):
                     mdag = sellist.getDagPath(0)
                     if cls.__name__ in [dag.Transform.__name__, dag.Joint.__name__]:
                         mfn = om.MFnTransform(mobj)
+                    elif cls.__name__ in [dep.SkinCluster.__name__]:
+                        mfn = _MFn_MFnSkinCluster(mobj)
+                    elif cls.__name__ in [dep.AnimCurve.__name__]:
+                        mfn = _MFn_MFnAnimCurve(mobj)
                 except TypeError:
                     pass
 
