@@ -32,7 +32,8 @@ def to_dependencynode(name):
     sellist = om.MSelectionList()
     sellist.add(name)
     try:
-        return om.MFnDependencyNode(sellist.getDependNode(0))
+        _mobj = sellist.getDependNode(0)
+        return om.MFnDependencyNode(_mobj), _mobj
     except TypeError:
         return
 
@@ -102,7 +103,8 @@ class MetanObject(object):
                 attrnames = arg0.split(u".")
                 arg0 = attrnames[0]
                 _attrname = attrnames[1]
-                mfn = to_dependencynode(arg0)
+                mfn, _mobj= to_dependencynode(arg0)
+                mobjh = _MFn_MObjectHandle(_mobj)
 
                 #   cls(u"pCube1.aaa[0]")
                 if u"[" in _attrname:
@@ -131,8 +133,8 @@ class MetanObject(object):
                         else:
                             mplg = mplg.child(mfn.attribute(_attrname))
 
-                # return set_api_objects(_plug, _dependnode, _api_objects, _newobj)
-                _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute()}
+                # _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute()}
+                _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute(), "_MObjectHandle":mobjh}
                 return set_api_objects(cls, _kws)
 
             # Case : Node
@@ -180,7 +182,9 @@ class MetanObject(object):
         #   cls(MPlug, u"aaa")
         elif isinstance(arg0, om.MPlug):
             _plug = arg0
-            mfn = om.MFnDependencyNode(_plug.node())
+            _mobj = _plug.node()
+            mfn = om.MFnDependencyNode(_mobj)
+            mobjh = _MFn_MObjectHandle(_mobj)
 
             #   cls(MPlug)
             if len(args) == 1:
@@ -196,7 +200,7 @@ class MetanObject(object):
                 else:
                     mplg = mfn.findPlug(mfn.attribute(args[1]), False)
 
-            _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute()}
+            _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute(), "_MObjectHandle":mobjh}
             return set_api_objects(cls, _kws)
 
 
@@ -219,6 +223,8 @@ class MetanObject(object):
     def __str__(self):
         return self.__repr__()
 
+    def __hash__(self):
+        return self._MObjectHandle.hashCode()
 
     def __name(self):
         if self._MDagPath:
@@ -279,6 +285,9 @@ class Attribute(MetanObject):
             return size
         else:
             raise TypeError("object of type '{0}' has no len()".format(self.__class__.__name__))
+
+    def __hash__(self):
+        return (self._MObjectHandle.hashCode(), self.longName()).__hash__()
 
     def size(self):
         _mplug = self._MPlug
