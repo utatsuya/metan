@@ -226,6 +226,15 @@ class MetanObject(object):
     def __hash__(self):
         return self._MObjectHandle.hashCode()
 
+    def __eq__(self, other):
+        if hasattr(other, "_MObject"):
+            return self._MObject == other._MObject
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __name(self):
         if self._MDagPath:
             return self._MDagPath.partialPathName()
@@ -285,6 +294,21 @@ class Attribute(MetanObject):
             return size
         else:
             raise TypeError("object of type '{0}' has no len()".format(self.__class__.__name__))
+
+
+    def __eq__(self, other):
+        if hasattr(other, "_MObject"):
+            try:
+                _selfindex = self._MPlug.logicalIndex()
+            except:
+                _selfindex = None
+            try:
+                _otherindex = other._MPlug.logicalIndex()
+            except:
+                _otherindex = None
+            return self._MObject == other._MObject and _selfindex == _otherindex
+        else:
+            return False
 
     def __hash__(self):
         return (self._MObjectHandle.hashCode(), self.longName()).__hash__()
