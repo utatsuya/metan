@@ -4,7 +4,12 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaAnim as oma
 from maya.OpenMaya import MGlobal as _api1_MGlobal
+
 from metan.exception import *
+from metan.datatype.euler import *
+from metan.datatype.matrix import *
+from metan.datatype.quaternion import *
+from metan.datatype.vector import *
 
 
 class TESTMObjectHandle(object):
@@ -406,8 +411,8 @@ class Attribute(MetanObject):
                 return plug.asString()
             elif _type == om.MFnData.kMatrix:
                 if plug.isArray:
-                    return om.MFnMatrixData(plug.elementByLogicalIndex(0).asMObject()).matrix()
-                return om.MFnMatrixData(plug.asMObject()).matrix()
+                    return Matrix(om.MFnMatrixData(plug.elementByLogicalIndex(0).asMObject()).matrix())
+                return Matrix(om.MFnMatrixData(plug.asMObject()).matrix())
 
         elif _apitype == om.MFn.kCompoundAttribute:
             res = []
