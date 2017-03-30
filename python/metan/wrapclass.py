@@ -349,6 +349,73 @@ class Attribute(MetanObject):
         else:
             raise TypeError("Data type is not valid here")
 
+    def _setDouble(self, plg, value, **kwds):
+        if u"api" in kwds:
+            plg.setDouble(value)
+        else:
+            cmds.setAttr(plg.name(), value)
+
+    def _setPlugValue(self, *value, **kwds):
+        if u"plug" in kwds:
+            # todo: type check
+            plug = kwds["plug"]
+        else:
+            plug = self._MPlug
+        _obj = plug.attribute()
+        _apitype = _obj.apiType()
+        _value = value
+
+        if len(_value) == 1:
+            _value0 = _value[0]
+            if isinstance(_value0, (list, tuple)):
+                # self.setPlugValue(*value, plug=plug)
+                _value = _value0
+            elif isinstance(_value0, Vector):
+                _value = (_value0.x, _value0.y, _value0.z)
+
+        # print("apitype", _obj.apiTypeStr)
+
+        if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float]:
+            _plug = None
+            if plug.isArray:
+                pass
+            else:
+                # _count = plug.numChildren()
+                if len(_value) != 3:
+                    raise MetanArgumentError()
+                for i in range(3):
+                    _plug = plug.child(i)
+                    kwds["plug"] = _plug
+                    # self._setPlugValue(_value[i], plug=_plug)
+                    self._setPlugValue(_value[i], **kwds)
+
+
+        elif _apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
+            # plug.setDouble(_value[0])
+            # cmds.setAttr(plug.name(), _value[0])
+            self._setDouble(plug, _value[0], **kwds)
+            # print(plug.name(),_value[0])
+
+        elif _apitype == om.MFn.kNumericAttribute:
+            _mfnattr = om.MFnNumericAttribute(_obj)
+            _type = _mfnattr.numericType()
+            # print("numeric type", _type)
+
+            if _type == om.MFnNumericData.kBoolean:
+                plug.setBool(_value[0])
+            elif _type in [om.MFnNumericData.kShort, om.MFnNumericData.kInt, om.MFnNumericData.kLong, om.MFnNumericData.kByte]:
+                plug.setInt(_value[0])
+            elif _type in [om.MFnNumericData.kFloat, om.MFnNumericData.kDouble, om.MFnNumericData.kAddr]:
+                # plug.setDouble(_value[0])
+                self._setDouble(plug, _value[0], **kwds)
+
+        elif _apitype == om.MFn.kEnumAttribute:pass
+        elif _apitype == om.MFn.kTypedAttribute:pass
+        elif _apitype == om.MFn.kCompoundAttribute:pass
+        elif _apitype in [om.MFn.kAttribute4Double]:pass
+        elif _apitype in [om.MFn.kAttribute2Double, om.MFn.kAttribute2Float]:pass
+        elif _apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:pass
+
     def _getPlugValue(self, plug):
         _obj = plug.attribute()
         _apitype = _obj.apiType()
@@ -426,17 +493,10 @@ class Attribute(MetanObject):
     def get(self):
         return self._getPlugValue(self._MPlug)
 
-    def set(self, value):
-        self.__setUseCmd(value)
+    def set(self, *value):
+        self._setPlugValue(*value)
 
-    def _set(self, value):
-        self.__setUseApi(value)
+    def _set(self, *value):
+        self._setPlugValue(*value, api=True)
 
-    def __setUseCmd(self, value):
-        # todo: 型に応じて適切な値をset cmds.setAttr()を利用する
-        cmds.setAttr(self._MPlug.name(), value)
-
-    def __setUseApi(self, value):
-        # todo: 型に応じて適切な値をset apiでsetする undo非サポート
-        self._MPlug.setDouble(value)
 

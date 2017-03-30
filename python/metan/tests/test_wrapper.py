@@ -4,10 +4,15 @@ import maya.cmds as cmds
 import maya.mel as mel
 import metan.core as mtn
 
+from metan.datatype.euler import EulerRotation
+from metan.datatype.matrix import Matrix
+from metan.datatype.quaternion import Quaternion
+from metan.datatype.vector import Vector
+
 
 class TestScene(unittest.TestCase):
 
-    def test_getset(self):
+    def test_get(self):
         cmds.file(new=True, f=True)
         cube = cmds.polyCube()[0]
         print cube
@@ -206,9 +211,35 @@ class TestScene(unittest.TestCase):
 
         print("end : node type test.")
 
+    def test_set(self):
+        cmds.file(new=True, f=True)
+        cube = cmds.polyCube()[0]
+        print cube
+        m = mtn.M(u"pCube1")
+        m.tx.set(1); assert(m.tx.get() == 1)
+        m.tx._set(2); assert(m.tx.get() == 2)
+        m.t.set(1,1,1); assert(m.t.get() == [1,1,1])
+        m.t._set(1,1,1); assert(m.t.get() == [1,1,1])
+        m.t.set([1,2,3]); assert(m.t.get() == [1,2,3])
+        m.t._set([1,2,3]); assert(m.t.get() == [1,2,3])
+        m.t.set(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
+        m.t._set(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
+
+        # m.rx.set(1); assert(m.rx.get() == 1)
+        # m.rx._set(2); assert(m.rx.get() == 2)
+        m.sx.set(2); assert(m.sx.get() == 2)
+        m.sx._set(1); assert(m.sx.get() == 1)
+        m.s.set(1,1,1); assert(m.s.get() == [1,1,1])
+        m.s._set(1,1,1); assert(m.s.get() == [1,1,1])
+        m.s.set([1,2,3]); assert(m.s.get() == [1,2,3])
+        m.s._set([1,2,3]); assert(m.s.get() == [1,2,3])
+        m.s.set(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
+        m.s._set(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
+
     def runTest(self):
-        self.test_getset()
+        self.test_get()
         self.test_types()
+        self.test_set()
 
 
 
