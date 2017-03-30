@@ -499,4 +499,10 @@ class Attribute(MetanObject):
     def _set(self, *value):
         self._setPlugValue(*value, api=True)
 
+    def _set_cmd(self, *value):
+        cmds.setAttr(self._MPlug.name(), *value)
+
+    def _set_api(self, *value):
+        self._MPlug.setDouble(*value)
+
 
