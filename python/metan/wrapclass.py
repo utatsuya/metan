@@ -6,10 +6,10 @@ import maya.api.OpenMayaAnim as oma
 from maya.OpenMaya import MGlobal as _api1_MGlobal
 
 from metan.exception import *
-from metan.datatype.euler import *
-from metan.datatype.matrix import *
-from metan.datatype.quaternion import *
-from metan.datatype.vector import *
+from metan.datatype.euler import EulerRotation
+from metan.datatype.matrix import Matrix
+from metan.datatype.quaternion import Quaternion
+from metan.datatype.vector import Vector
 
 
 class TESTMObjectHandle(object):
