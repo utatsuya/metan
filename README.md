@@ -6,7 +6,8 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   * オブジェクト生成
   * アトリビュートの値の取得
-
+  * オブジェクト同士の比較 
+  
 #### まだできないこと
 
   * 値の設定全般
@@ -84,10 +85,15 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   m.wm.get()
   m.wm[0].get()
   # Result: maya.api.OpenMaya.MMatrix(((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))) # 
+
+  # インスタンスの異なるオブジェクト同士の比較
+  mtn.M(u"pCube1").t.tx == mtn.M(u"pCube1.tx") # True
+  mtn.M(u"pCube1").attr("t.tx") == mtn.M(u"pCube1").attr("translate").attr("translateX") # True
+  mtn.M(u"pCube1").wm == mtn.M(u"pCube1").wm[0] #False
   ```
   
   詳しくは、テストコード（
-[test_wrapper.py](/tests/test_wrapper.py)
+[test_wrapper.py](/python/metan/tests/test_wrapper.py)
 ）を確認してください
 
 ```
