@@ -6,18 +6,23 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   * オブジェクト生成
   * アトリビュートの値の取得
+  * [New]アトリビュートへ値を設定
   * オブジェクト同士の比較 
   
-#### まだできないこと
+#### まだできないこと（未実装なもの）
 
-  * 値の設定全般
-  * その他多くのことができません
-  
+  * listAttr(),inputs(),outputs()などのpymelにあるようなメソッド
+  * ノードタイプ固有のメソッド（Transform.getTranslation()など）
+  * その他もろもろ
+ 
 #### プロファイル結果
 
   ```
-  import metan.debug as dbg
+  import maya.cmds as cmds
   import pymel.core as pm
+  import pymel.core.datatypes as dt
+  import metan.debug as dbg
+  
   cmds.polyCube()[0]
   
   # cubeのtranslateXの値を1000回取得
@@ -36,8 +41,47 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   print dbg.run_profile(func, count=1000)()
   func = mtn.M(u"pCube1").m.get
   print dbg.run_profile(func, count=1000)()
-  
-  
+
+
+  # cubeのtranslateXに1000回設定
+  # pymel:0.121s, metan(cmds):0.050s, metan(api):0.011s
+
+  print dbg.run_profile(pm.PyNode(u"pCube1").tx.set, count=1000)(1)
+  print dbg.run_profile(mtn.M(u"pCube1").tx.set, count=1000)(1)
+  print dbg.run_profile(mtn.M(u"pCube1").tx._set, count=1000)(1) #APIを利用したsetのためundo不可
+
+
+  # cubeのtranslateに1000回設定 その１
+  # pymel:0.136s, metan(cmds):0.067s, metan(api):0.040s
+
+  print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)(1,2,3)
+  print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)(1,2,3)
+  print dbg.run_profile(mtn.M(u"pCube1").t._set, count=1000)(1,2,3) #APIを利用したsetのためundo不可
+
+
+  # cubeのtranslateに1000回設定 その２
+  # pymel:0.196s, metan(cmds):0.070s, metan(api):0.041s
+
+  print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)([1,2,3])
+  print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)([1,2,3])
+  print dbg.run_profile(mtn.M(u"pCube1").t._set, count=1000)([1,2,3]) #APIを利用したsetのためundo不可
+
+
+  # cubeのtranslateに1000回設定 その３
+  # pymel:0.181s, metan(cmds):0.077s, metan(api):0.046s
+
+  print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)(dt.Vector(1,2,3))
+  print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)(mtn.Vector(1,2,3))
+  print dbg.run_profile(mtn.M(u"pCube1").t._set, count=1000)(mtn.Vector(1,2,3)) #APIを利用したsetのためundo不可
+
+
+  # addMatrixのinput[0]にMatrixを100回設定
+  # pymel:1.367s, metan(cmds):0.026s, metan(api):0.011s
+
+  cmds.createNode(u"addMatrix")
+  print dbg.run_profile(pm.PyNode(u"addMatrix1").i[0].set, count=100)(dt.Matrix())
+  print dbg.run_profile(mtn.M(u"addMatrix1").i[0].set, count=100)(mtn.Matrix(mtn.Matrix()))
+  print dbg.run_profile(mtn.M(u"addMatrix1").i[0]._set, count=100)(mtn.Matrix()) #APIを利用したsetのためundo不可
   ```
   
 #### 記述例
@@ -70,6 +114,11 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   
   m.tx.get()
   # result : 0.0 # 
+  
+  m.tx.set(1.0)
+  m.t.set(mtn.Vector(1,1,1))
+  m.r.set(mtn.EulerRotation(1,1,1))
+  m.s.set(1.5, 1.5, 1.5)
   
   m.wm.name()
   m.worldMatrix.name()
