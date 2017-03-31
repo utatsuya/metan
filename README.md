@@ -9,6 +9,9 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   * [New]アトリビュートへ値を設定
   * オブジェクト同士の比較 
   
+  
+※getsetは内部単位で扱います。例えば、回転値はUI上ではDegreeとなっていてもmetanでは常にRadianです。
+  
 #### まだできないこと（未実装なもの）
 
   * listAttr(),inputs(),outputs()などのpymelにあるようなメソッド
