@@ -275,6 +275,15 @@ class TestScene(unittest.TestCase):
         assert(m.mmv.get() == [0.0, 8.0])
         assert(m.minMaxValue.get() == [0.0, 8.0])
 
+        # simple compound attribute
+        cmds.createNode("quatAdd")
+        m = mtn.M("quatAdd1")
+        m.input1Quat.set(1, 1, 1, 1); assert(m.input1Quat.get() == [1.0,1.0,1.0,1.0])
+        m.input1Quat.set(2, 3, 4, 5); assert(m.input1Quat.get() == [2.0,3.0,4.0,5.0])
+        m.input1Quat._set(1, 1, 1, 1); assert(m.input1Quat.get() == [1.0,1.0,1.0,1.0])
+        m.input1Quat._set(2, 3, 4, 5); assert(m.input1Quat.get() == [2.0,3.0,4.0,5.0])
+
+
     def runTest(self):
         self.test_get()
         self.test_types()
