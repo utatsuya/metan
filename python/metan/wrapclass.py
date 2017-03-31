@@ -370,6 +370,8 @@ class Attribute(MetanObject):
                 _value = (_value0.x, _value0.y, _value0.z)
             elif isinstance(_value0, EulerRotation):
                 _value = (_value0.x, _value0.y, _value0.z)
+            elif isinstance(_value0, Matrix):
+                _value = (v for i, v in enumerate(_value0))
 
 
         if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float,
@@ -460,6 +462,10 @@ class Attribute(MetanObject):
                 # todo : set matrix
                 if plug.isArray:
                     raise MetanRuntimeError(u"The attribute '{0}' is a multi.".format(plug.name()))
+                else:
+                    if not kwds.get("api"):
+                        cmds.setAttr(plug.name(), *_value, type="matrix")
+
 
         elif _apitype == om.MFn.kCompoundAttribute:
             _count = plug.numChildren()
