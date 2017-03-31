@@ -84,7 +84,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   
   m.wm.get()
   m.wm[0].get()
-  # Result: maya.api.OpenMaya.MMatrix(((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))) # 
+  # Result: Matrix(((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))) # 
 
   # インスタンスの異なるオブジェクト同士の比較
   mtn.M(u"pCube1").t.tx == mtn.M(u"pCube1.tx") # True
