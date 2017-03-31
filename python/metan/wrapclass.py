@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from __future__ import print_function, absolute_import, division
+import math
 import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import maya.api.OpenMayaAnim as oma
@@ -350,7 +351,8 @@ class Attribute(MetanObject):
             raise TypeError("Data type is not valid here")
 
     def _setDouble(self, plg, value, **kwds):
-        if u"api" in kwds:
+        # if u"api" in kwds:
+        if kwds.get(u"api"):
             plg.setDouble(value)
         else:
             cmds.setAttr(plg.name(), value)
@@ -359,42 +361,65 @@ class Attribute(MetanObject):
         if u"plug" in kwds:
             # todo: type check
             plug = kwds["plug"]
+            _obj = plug.attribute()
         else:
             plug = self._MPlug
-        _obj = plug.attribute()
+            _obj = self._MObject
         _apitype = _obj.apiType()
         _value = value
+        _value0 = value[0]
 
         if len(_value) == 1:
-            _value0 = _value[0]
             if isinstance(_value0, (list, tuple)):
-                # self.setPlugValue(*value, plug=plug)
                 _value = _value0
             elif isinstance(_value0, Vector):
                 _value = (_value0.x, _value0.y, _value0.z)
 
         # print("apitype", _obj.apiTypeStr)
 
-        if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float]:
-            _plug = None
+        if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float,
+                        om.MFn.kAttribute2Double, om.MFn.kAttribute2Float,
+                        om.MFn.kAttribute4Double]:
+
             if plug.isArray:
-                pass
+                raise MetanRuntimeError(u"The attribute '{0}' is a multi.".format(plug.name()))
             else:
-                # _count = plug.numChildren()
-                if len(_value) != 3:
-                    raise MetanArgumentError()
-                for i in range(3):
+                _count = plug.numChildren()
+                if len(_value) != _count:
+                    raise MetanArgumentError(u"{0} elements are required for this attribute (given {1})"
+                                             .format(_count, len(_value)))
+                if not kwds.get("api"):
+                    _childtype = plug.child(0).attribute().apiType()
+                    if _childtype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
+                        distance_unit = om.MDistance.uiUnit()
+                        _value = [om.MDistance(_va, om.MDistance.kCentimeters).asUnits(distance_unit) for _va in _value]
+                        # _distance = om.MDistance(_value0, om.MDistance.kCentimeters)
+                        # _value0 = _distance.asUnits(distance_unit)
+                        cmds.setAttr(plug.name(), *_value)
+
+                    elif _childtype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
+                        angle_unit = om.MAngle.uiUnit()
+                        if angle_unit == om.MAngle.kDegrees:
+                            _value = [math.degrees(agl) for agl in _value]
+                        cmds.setAttr(plug.name(), *_value)
+                    else:
+                        cmds.setAttr(plug.name(), *_value)
+                    return
+
+                for i in range(_count):
                     _plug = plug.child(i)
                     kwds["plug"] = _plug
-                    # self._setPlugValue(_value[i], plug=_plug)
                     self._setPlugValue(_value[i], **kwds)
 
 
         elif _apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
-            # plug.setDouble(_value[0])
-            # cmds.setAttr(plug.name(), _value[0])
-            self._setDouble(plug, _value[0], **kwds)
-            # print(plug.name(),_value[0])
+            if kwds.get(u"api"):
+                plug.setDouble(_value0)
+            else:
+                distance_unit = om.MDistance.uiUnit()
+                _distance = om.MDistance(_value0, om.MDistance.kCentimeters)
+                _value0 = _distance.asUnits(distance_unit)
+                cmds.setAttr(plug.name(), _value0)
 
         elif _apitype == om.MFn.kNumericAttribute:
             _mfnattr = om.MFnNumericAttribute(_obj)
@@ -402,19 +427,36 @@ class Attribute(MetanObject):
             # print("numeric type", _type)
 
             if _type == om.MFnNumericData.kBoolean:
-                plug.setBool(_value[0])
+                if kwds.get(u"api"):
+                    plug.setBool(_value0)
+                    return
             elif _type in [om.MFnNumericData.kShort, om.MFnNumericData.kInt, om.MFnNumericData.kLong, om.MFnNumericData.kByte]:
-                plug.setInt(_value[0])
+                if kwds.get(u"api"):
+                    plug.setInt(_value0)
+                    return
             elif _type in [om.MFnNumericData.kFloat, om.MFnNumericData.kDouble, om.MFnNumericData.kAddr]:
-                # plug.setDouble(_value[0])
-                self._setDouble(plug, _value[0], **kwds)
+                if kwds.get(u"api"):
+                    plug.setDouble(_value0)
+                    return
+            cmds.setAttr(plug.name(), _value0)
 
-        elif _apitype == om.MFn.kEnumAttribute:pass
+        elif _apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
+            if kwds.get(u"api"):
+                plug.setDouble(_value0)
+            else:
+                angle_unit = om.MAngle.uiUnit()
+                if angle_unit == om.MAngle.kDegrees:
+                    _value0 = math.degrees(_value0)
+                cmds.setAttr(plug.name(), _value0)
+
+        elif _apitype == om.MFn.kEnumAttribute:
+            if kwds.get(u"api"):
+                plug.setDouble(_value0)
+            else:
+                cmds.setAttr(plug.name(), _value0)
+
         elif _apitype == om.MFn.kTypedAttribute:pass
         elif _apitype == om.MFn.kCompoundAttribute:pass
-        elif _apitype in [om.MFn.kAttribute4Double]:pass
-        elif _apitype in [om.MFn.kAttribute2Double, om.MFn.kAttribute2Float]:pass
-        elif _apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:pass
 
     def _getPlugValue(self, plug):
         _obj = plug.attribute()
@@ -449,11 +491,12 @@ class Attribute(MetanObject):
             return res
 
         elif _apitype in [om.MFn.kDoubleAngleAttribute, om.MFn.kFloatAngleAttribute]:
-            angle_unit = om.MAngle.uiUnit()
-            if angle_unit == om.MAngle.kDegrees:
-                return plug.asMAngle().asDegrees()
-            else:
-                return plug.asDouble()
+            return plug.asDouble()
+            # angle_unit = om.MAngle.uiUnit()
+            # if angle_unit == om.MAngle.kDegrees:
+            #     return plug.asMAngle().asDegrees()
+            # else:
+            #     return plug.asDouble()
 
         elif _apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
             return plug.asDouble()
