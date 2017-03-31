@@ -459,14 +459,12 @@ class Attribute(MetanObject):
                     cmds.setAttr(plug.name(), unicode(_value0), type="string")
 
             elif _type == om.MFnData.kMatrix:
-                # todo : set matrix
                 if plug.isArray:
                     raise MetanRuntimeError(u"The attribute '{0}' is a multi.".format(plug.name()))
                 else:
                     if not kwds.get("api"):
                         cmds.setAttr(plug.name(), *_value, type="matrix")
                     else:
-                        # om.MFnMatrixData(plug.asMObject()).set(Matrix(_value))
                         if _value.__class__.__name__ == u"generator":
                             plug.setMObject(om.MFnMatrixData().create(Matrix([v for v in _value])))
                         else:
@@ -585,11 +583,5 @@ class Attribute(MetanObject):
 
     def _set(self, *value):
         self._setPlugValue(*value, api=True)
-
-    def _set_cmd(self, *value):
-        cmds.setAttr(self._MPlug.name(), *value)
-
-    def _set_api(self, *value):
-        self._MPlug.setDouble(*value)
 
 
