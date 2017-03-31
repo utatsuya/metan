@@ -258,6 +258,11 @@ class TestScene(unittest.TestCase):
         m.colorSet[0].representation._set(2); assert(m.colorSet[0].representation.get() == 2)
         m.colorSet[0].representation.set(4); assert(m.colorSet[0].representation.get() == 4)
         m.colorSet[0].representation._set(4); assert(m.colorSet[0].representation.get() == 4)
+        # string
+        m.currentColorSet.set(u"hokuhoku"); assert(m.currentColorSet.get() == u"hokuhoku")
+        m.currentColorSet.set(u""); assert(m.currentColorSet.get() == u"")
+        m.currentColorSet._set(u"hokuhoku"); assert(m.currentColorSet.get() == u"hokuhoku")
+        m.currentColorSet._set(u""); assert(m.currentColorSet.get() == u"")
         # int
         m = mtn.M("polyCube1")
         m.subdivisionsWidth.set(2); assert(m.subdivisionsWidth.get() == 2)

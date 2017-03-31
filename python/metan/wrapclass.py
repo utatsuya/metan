@@ -455,7 +455,19 @@ class Attribute(MetanObject):
             else:
                 cmds.setAttr(plug.name(), _value0)
 
-        elif _apitype == om.MFn.kTypedAttribute:pass
+        elif _apitype == om.MFn.kTypedAttribute:
+            _mfnattr = om.MFnTypedAttribute(_obj)
+            _type = _mfnattr.attrType()
+            if _type == om.MFnData.kString:
+                if kwds.get(u"api"):
+                    plug.setString(unicode(_value0))
+                else:
+                    cmds.setAttr(plug.name(), unicode(_value0), type="string")
+
+            elif _type == om.MFnData.kMatrix:
+                if plug.isArray:
+                    pass
+
         elif _apitype == om.MFn.kCompoundAttribute:pass
 
     def _getPlugValue(self, plug):
