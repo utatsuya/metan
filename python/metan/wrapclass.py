@@ -465,6 +465,13 @@ class Attribute(MetanObject):
                 else:
                     if not kwds.get("api"):
                         cmds.setAttr(plug.name(), *_value, type="matrix")
+                    else:
+                        # om.MFnMatrixData(plug.asMObject()).set(Matrix(_value))
+                        if _value.__class__.__name__ == u"generator":
+                            plug.setMObject(om.MFnMatrixData().create(Matrix([v for v in _value])))
+                        else:
+                            plug.setMObject(om.MFnMatrixData().create(Matrix(_value)))
+
 
 
         elif _apitype == om.MFn.kCompoundAttribute:

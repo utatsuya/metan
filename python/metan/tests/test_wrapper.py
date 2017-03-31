@@ -283,6 +283,33 @@ class TestScene(unittest.TestCase):
         m.input1Quat._set(1, 1, 1, 1); assert(m.input1Quat.get() == [1.0,1.0,1.0,1.0])
         m.input1Quat._set(2, 3, 4, 5); assert(m.input1Quat.get() == [2.0,3.0,4.0,5.0])
 
+        # matrix
+        cmds.createNode(u"addMatrix")
+        m = mtn.M(u"addMatrix1")
+        # cmds
+        m.i[0].set(5,1,1,1,5,1,1,1,5,1,1,1,5,1,1,1)
+        assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
+        m.i[0].set([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3])
+        assert(repr(m.matrixSum.get()) == 'Matrix(((0, 0, 0, 0), (1, 1, 1, 1), (2, 2, 2, 2), (3, 3, 3, 3)))')
+        m.i[0].set(mtn.Matrix())
+        assert(repr(m.matrixSum.get()) == 'Matrix(((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)))')
+        # m.i[0].set([[0,0,0,0],[1,1,1,1],[2,2,2,2],[3,3,3,3]])
+        # assert(repr(m.matrixSum.get()) == 'Matrix(((0, 0, 0, 0), (1, 1, 1, 1), (2, 2, 2, 2), (3, 3, 3, 3)))')
+        # m.i[0].set([5,1,1,1],[5,1,1,1],[5,1,1,1],[5,1,1,1])
+        # assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
+
+        # api
+        m.i[0]._set(5,1,1,1,5,1,1,1,5,1,1,1,5,1,1,1)
+        assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
+        m.i[0]._set([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3])
+        assert(repr(m.matrixSum.get()) == 'Matrix(((0, 0, 0, 0), (1, 1, 1, 1), (2, 2, 2, 2), (3, 3, 3, 3)))')
+        m.i[0]._set(mtn.Matrix())
+        assert(repr(m.matrixSum.get()) == 'Matrix(((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)))')
+        m.i[0]._set([[0,0,0,0],[1,1,1,1],[2,2,2,2],[3,3,3,3]])
+        assert(repr(m.matrixSum.get()) == 'Matrix(((0, 0, 0, 0), (1, 1, 1, 1), (2, 2, 2, 2), (3, 3, 3, 3)))')
+        m.i[0]._set([5,1,1,1],[5,1,1,1],[5,1,1,1],[5,1,1,1])
+        assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
+
 
     def runTest(self):
         self.test_get()
