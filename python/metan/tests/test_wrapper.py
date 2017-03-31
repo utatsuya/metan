@@ -225,8 +225,19 @@ class TestScene(unittest.TestCase):
         m.t.set(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
         m.t._set(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
 
-        # m.rx.set(1); assert(m.rx.get() == 1)
-        # m.rx._set(2); assert(m.rx.get() == 2)
+        m.rx.set(0.349); self.failUnlessAlmostEqual(m.rx.get(), 0.349)
+        m.rx.set(0); assert(m.rx.get() == 0)
+        m.rx._set(0.349); self.failUnlessAlmostEqual(m.rx.get(), 0.349)
+        m.rx._set(0); assert(m.rx.get() == 0)
+        m.r.set(.3,.4,.5);
+        self.failUnlessAlmostEqual(m.rx.get(), 0.3)
+        self.failUnlessAlmostEqual(m.ry.get(), 0.4)
+        self.failUnlessAlmostEqual(m.rz.get(), 0.5)
+        m.r._set(.1,.2,.3)
+        self.failUnlessAlmostEqual(m.rx.get(), 0.1)
+        self.failUnlessAlmostEqual(m.ry.get(), 0.2)
+        self.failUnlessAlmostEqual(m.rz.get(), 0.3)
+
         m.sx.set(2); assert(m.sx.get() == 2)
         m.sx._set(1); assert(m.sx.get() == 1)
         m.s.set(1,1,1); assert(m.s.get() == [1,1,1])
@@ -235,6 +246,29 @@ class TestScene(unittest.TestCase):
         m.s._set([1,2,3]); assert(m.s.get() == [1,2,3])
         m.s.set(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
         m.s._set(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
+
+        m = mtn.M("pCubeShape1")
+        # bool
+        m.colorSet[0].clamped.set(False); assert(m.colorSet[0].clamped.get() == False)
+        m.colorSet[0].clamped._set(False); assert(m.colorSet[0].clamped.get() == False)
+        m.colorSet[0].clamped.set(1); assert(m.colorSet[0].clamped.get() == True)
+        m.colorSet[0].clamped._set(1); assert(m.colorSet[0].clamped.get() == True)
+        # enum
+        m.colorSet[0].representation.set(2); assert(m.colorSet[0].representation.get() == 2)
+        m.colorSet[0].representation._set(2); assert(m.colorSet[0].representation.get() == 2)
+        m.colorSet[0].representation.set(4); assert(m.colorSet[0].representation.get() == 4)
+        m.colorSet[0].representation._set(4); assert(m.colorSet[0].representation.get() == 4)
+        # int
+        m = mtn.M("polyCube1")
+        m.subdivisionsWidth.set(2); assert(m.subdivisionsWidth.get() == 2)
+        m.subdivisionsWidth._set(2); assert(m.subdivisionsWidth.get() == 2)
+        m.subdivisionsWidth.set(1); assert(m.subdivisionsWidth.get() == 1)
+        m.subdivisionsWidth._set(1); assert(m.subdivisionsWidth.get() == 1)
+
+        cmds.circle()
+        m = mtn.M(u"nurbsCircleShape1")
+        assert(m.mmv.get() == [0.0, 8.0])
+        assert(m.minMaxValue.get() == [0.0, 8.0])
 
     def runTest(self):
         self.test_get()
