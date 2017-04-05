@@ -9,6 +9,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   * アトリビュートへ値を設定
   * オブジェクト同士の比較 
   * DependNode.listAttrStr(), _listAttr() [issues#9](https://github.com/utatsuya/metan/issues/9)
+  * metan.core.selected()
   
   
 ※getsetは内部単位で扱います。例えば、回転値はUI上ではDegreeとなっていてもmetanでは常にRadianです。
