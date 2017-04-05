@@ -311,10 +311,27 @@ class TestScene(unittest.TestCase):
         assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
 
 
+    def test_listattr(self):
+        cmds.file(new=True, f=True)
+        cube = cmds.polyCube()[0]
+        m = mtn.M(u"pCube1")
+        m.listAttrStr("rotateQuaternion", "selectHandle")
+        m.listAttrStr("pCube1.rotateQuaternion", "pCube1.selectHandle")
+        m.listAttrStr(array=True)
+        m.listAttrStr("rotateQuaternion", "selectHandle", array=True)
+
+        m._listAttr("rotateQuaternion", "selectHandle")
+        m._listAttr("pCube1.rotateQuaternion", "pCube1.selectHandle")
+        m._listAttr(array=True)
+        m._listAttr("rotateQuaternion", "selectHandle", array=True)
+
+
+
     def runTest(self):
         self.test_get()
         self.test_types()
         self.test_set()
+        self.test_listattr()
 
 
 
