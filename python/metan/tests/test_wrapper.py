@@ -325,6 +325,21 @@ class TestScene(unittest.TestCase):
         m._listAttr(array=True)
         m._listAttr("rotateQuaternion", "selectHandle", array=True)
 
+    def test_hasattr(self):
+        cmds.file(new=True, f=True)
+        cube = cmds.polyCube()[0]
+        m = mtn.M(u"pCube1")
+        assert(m.hasAttr(u"t.tx") == True)
+        assert(m.hasAttr(u"t") == True)
+        assert(m.hasAttr(u"tx") == True)
+        assert(m.hasAttr(u"aaa") == False)
+        assert(m.hasAttr(u"wm") == True)
+        assert(m.hasAttr(u"wm[0]") == True)
+
+        assert(m.hasAttr(m.t) == True)
+        assert(m.hasAttr(m.tx) == True)
+        assert(m.hasAttr(m.wm) == True)
+        assert(m.hasAttr(m.wm[0]) == True)
 
 
     def runTest(self):
@@ -332,6 +347,7 @@ class TestScene(unittest.TestCase):
         self.test_types()
         self.test_set()
         self.test_listattr()
+        self.test_hasattr()
 
 
 

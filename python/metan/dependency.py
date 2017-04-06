@@ -31,5 +31,15 @@ class DependNode(MetanObject):
         if self._MFn:
             return self._MFn.typeName
 
+    def hasAttr(self, attr):
+        if isinstance(attr, basestring):
+            if u"[" in attr or u"." in attr:
+                return cmds.objExists(self.name()+"."+attr)
+            else:
+                return self._MFn.hasAttribute(attr)
+        elif attr.__class__.__name__ ==  Attribute.__name__:
+            return self._MFn.hasAttribute(attr.attrName())
+
+
 class AnimCurve(DependNode):pass
 class SkinCluster(DependNode):pass
