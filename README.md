@@ -28,21 +28,21 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   import pymel.core as pm
   import pymel.core.datatypes as dt
   import metan.debug as dbg
-  
+
   cmds.polyCube()[0]
-  
+
   # cubeのtranslateXの値を1000回取得
   # pymel:0.09s, metan:0.015s
-  
+
   func = pm.PyNode(u"pCube1").t.tx.get
   print dbg.run_profile(func, count=1000)()
   func = mtn.M(u"pCube1").t.tx.get
   print dbg.run_profile(func, count=1000)()
-  
-  
+
+
   # cubeのmatrixの値を1000回取得
-  # pymel:1.56s, metan:0.023s
-  
+  # pymel:1.56s, metan:0.031s
+
   func = pm.PyNode(u"pCube1").m.get
   print dbg.run_profile(func, count=1000)()
   func = mtn.M(u"pCube1").m.get
@@ -50,7 +50,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
 
   # cubeのtranslateXに1000回設定
-  # pymel:0.121s, metan(cmds):0.050s, metan(api):0.011s
+  # pymel:0.112s, metan(cmds):0.074s, metan(api):0.027s
 
   print dbg.run_profile(pm.PyNode(u"pCube1").tx.set, count=1000)(1)
   print dbg.run_profile(mtn.M(u"pCube1").tx.set, count=1000)(1)
@@ -58,7 +58,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
 
   # cubeのtranslateに1000回設定 その１
-  # pymel:0.136s, metan(cmds):0.067s, metan(api):0.040s
+  # pymel:0.136s, metan(cmds):0.084s, metan(api):0.067s
 
   print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)(1,2,3)
   print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)(1,2,3)
@@ -66,7 +66,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
 
   # cubeのtranslateに1000回設定 その２
-  # pymel:0.196s, metan(cmds):0.070s, metan(api):0.041s
+  # pymel:0.244s, metan(cmds):0.087s, metan(api):0.050s
 
   print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)([1,2,3])
   print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)([1,2,3])
@@ -74,7 +74,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
 
   # cubeのtranslateに1000回設定 その３
-  # pymel:0.181s, metan(cmds):0.077s, metan(api):0.046s
+  # pymel:0.181s, metan(cmds):0.098s, metan(api):0.063s
 
   print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)(dt.Vector(1,2,3))
   print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)(mtn.Vector(1,2,3))
@@ -91,6 +91,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   ```
   
 #### 記述例
+
   ```
   import metan.core as mtn
   import maya.cmds as cmds
