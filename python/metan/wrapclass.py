@@ -48,6 +48,8 @@ def set_api_objects(cls, api_objs):
     for k, _obj in api_objs.items():
             _newobj.__setattr__(k, _obj)
 
+    _newobj.__setattr__("_cache_attribute", {})
+    _newobj.__setattr__("_cache", True)
     return _newobj
 
 
@@ -87,6 +89,8 @@ class MetanObject(object):
                 arg0 = arg0 + u"." + unicode(args[1])
 
             if cls.__name__ == MetanObject.__name__:
+                if "cache" in kws:
+                    return Attribute(arg0, cache=kws["cache"])
                 return Attribute(arg0)
 
         # Case : Node or Attribute
@@ -104,6 +108,8 @@ class MetanObject(object):
             #   cls(u"pCube1.aaa[0].bbb")
             if u"." in arg0:
                 if cls.__name__ == MetanObject.__name__:
+                    if "cache" in kws:
+                        return Attribute(arg0, cache=kws["cache"])
                     return Attribute(arg0)
 
                 attrnames = arg0.split(u".")
@@ -213,9 +219,17 @@ class MetanObject(object):
 
     def attr(self, attr):
         self.validCheck()
+
+        if self._cache:
+            if attr in self._cache_attribute:
+                return self._cache_attribute[attr]
+
         attrname = self.name()+u"."+attr
         if cmds.objExists(attrname):
-            return Attribute(attrname)
+            _attribute = Attribute(attrname, cache=self._cache)
+            if self._cache:
+                self._cache_attribute[attr] = _attribute
+            return _attribute
         else:
             raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
@@ -262,15 +276,32 @@ class MetanObject(object):
 
 class Attribute(MetanObject):
 
+    def __init__(self, *args, **kws):
+        if "cache" in kws:
+            self._cache = kws["cache"]
+        else:
+            self._cache = True
+
     def attr(self, attr):
         # self.validCheck()
+
+        if self._cache:
+            if attr in self._cache_attribute:
+                return self._cache_attribute[attr]
+
         attrname = self.name()+u"."+attr
         if cmds.objExists(attrname):
-            return Attribute(attrname)
+            _attribute = Attribute(attrname, cache=self._cache)
+            if self._cache:
+                self._cache_attribute[attr] = _attribute
+            return _attribute
         else:
             attrname = self.name() + u"." + self._MPlug.partialName() + attr
             if cmds.objExists(attrname):
-                return Attribute(attrname)
+                _attribute = Attribute(attrname, cache=self._cache)
+                if self._cache:
+                    self._cache_attribute[attr] = _attribute
+                return _attribute
             else:
                 raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 

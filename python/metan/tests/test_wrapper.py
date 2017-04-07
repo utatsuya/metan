@@ -326,6 +326,7 @@ class TestScene(unittest.TestCase):
         m._listAttr("rotateQuaternion", "selectHandle", array=True)
 
     def test_hasattr(self):
+        print(u"test_hasattr")
         cmds.file(new=True, f=True)
         cube = cmds.polyCube()[0]
         m = mtn.M(u"pCube1")
@@ -341,6 +342,27 @@ class TestScene(unittest.TestCase):
         assert(m.hasAttr(m.wm) == True)
         assert(m.hasAttr(m.wm[0]) == True)
 
+    def test_cached_attribute(self):
+        print(u"test_cached_attribute")
+        cmds.file(new=True, f=True)
+        cube = cmds.polyCube()[0]
+        m1 = mtn.M(u"pCube1")
+        # m1._cache = True # default:True
+        m2 = mtn.M(u"pCube1")
+        m2._cache = False
+        assert(m1._cache_attribute == {})
+        assert(m2._cache_attribute == {})
+        m1.t
+        m2.t
+        assert(u"t" in m1._cache_attribute)
+        assert(u"t" not in m2._cache_attribute)
+        assert(m1._cache == True)
+        assert(m2._cache == False)
+        assert(m1.t._cache == True)
+        assert(m2.t._cache == False)
+        assert(m1.t.tx._cache == True)
+        assert(m2.t.tx._cache == False)
+
 
     def runTest(self):
         self.test_get()
@@ -348,6 +370,7 @@ class TestScene(unittest.TestCase):
         self.test_set()
         self.test_listattr()
         self.test_hasattr()
+        self.test_cached_attribute()
 
 
 
