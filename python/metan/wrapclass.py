@@ -300,38 +300,34 @@ class MetanObject(object):
         _p = kws.get("p", kws.get("plugs", False))
         _s = kws.get("s", kws.get("source", True))
         _t = kws.get("t", kws.get("type", ""))
-        if _p and _c is False:
+        if _c:
+            plugs = []
+            for item in self._MFn.getConnections():
+                _name = item.partialName()
+                if item.isDestination and _s:
+                    plugs.append((_name, item.source()))
+                if item.isSource and _d:
+                    plugs.extend([(_name, dst) for dst in item.destinations()])
+
+            if _p:
+                # p=True, c=True
+                return [(self.attr(_attrname), Attribute(p.name())) for _attrname,p in plugs]
+            else:
+                # p=False, c=True
+                return [(self.attr(_attrname), MetanObject(p.name().split(".")[0])) for _attrname,p in plugs]
+
+        elif _p:
             plugs = []
             for item in self._MFn.getConnections():
                 if item.isDestination and _s:
                     plugs.append(item.source())
                 if item.isSource and _d:
                     plugs.extend([dst for dst in item.destinations()])
+
+            # p=True, c=False
             return [Attribute(p.name()) for p in plugs]
 
-
-        elif _p and _c:
-            plugs = []
-            for item in self._MFn.getConnections():
-                if item.isDestination and _s:
-                    plugs.append((item.partialName(), item.source()))
-                if item.isSource and _d:
-                    plugs.extend([(item.partialName(), dst) for dst in item.destinations()])
-
-            return [(self.attr(_attrname), Attribute(p.name())) for _attrname,p in plugs]
-
-
-        elif _p is False and _c:
-            plugs = []
-            for item in self._MFn.getConnections():
-                if item.isDestination and _s:
-                    plugs.append((item.partialName(), item.source()))
-                if item.isSource and _d:
-                    plugs.extend([(item.partialName(), dst) for dst in item.destinations()])
-
-            return [(self.attr(_attrname), MetanObject(p.name().split(".")[0])) for _attrname,p in plugs]
-
-        elif _p is False and _c is False:
+        else:
             plugs = []
             for item in self._MFn.getConnections():
                 if item.isDestination and _s:
@@ -339,6 +335,7 @@ class MetanObject(object):
                 if item.isSource and _d:
                     plugs.extend([dst for dst in item.destinations()])
 
+            # p=False, c=False
             return [MetanObject(p.name().split(".")[0]) for p in plugs]
 
 
