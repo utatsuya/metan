@@ -11,16 +11,17 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   * metan.core.selected()
   * DependNode.listAttrStr(), _listAttr() [issues#9](https://github.com/utatsuya/metan/issues/9)
   * DependNode.hasAttr() [issues#10](https://github.com/utatsuya/metan/issues/10)
-  * [New] Attribute()をキャッシュして高速化 [issues#5](https://github.com/utatsuya/metan/issues/5)
+  * Attribute()をキャッシュして高速化 [issues#5](https://github.com/utatsuya/metan/issues/5)
+  * [New] MetanObject.listConnections(),inputs(),outputs() [issues#11](https://github.com/utatsuya/metan/issues/11)
 
 ※getsetは内部単位で扱います。例えば、回転値はUI上ではDegreeとなっていてもmetanでは常にRadianです。
   
 #### まだできないこと（未実装なもの）
 
-  * inputs(),outputs()などのpymelにあるようなメソッド
-  * ノードタイプ固有のメソッド（Transform.getTranslation()など）
-  * その他もろもろ
- 
+  * SRT関係のメソッド（Transform.getTranslation()など）
+  * ノードタイプ固有のメソッド（DagNode.getShapes(),など）
+  * その他もろもろ(addAttr,deleteAttr,addChild,getChildren,hasChild,numChildren,hasParent,getParent,setParent....
+
 #### プロファイル結果
 
   ```

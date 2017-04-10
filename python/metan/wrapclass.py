@@ -274,32 +274,65 @@ class MetanObject(object):
             raise MetanObjectNotFoundError(self.__name())
 
 
+    def inputs(self, **kws):
+        kws["source"] = True
+        kws.pop("s", None)
+        kws["destination"] = False
+        kws.pop("d", None)
+        return self.listConnections(**kws)
+
+    def outputs(self, **kws):
+        kws["source"] = False
+        kws.pop("s", None)
+        kws["destination"] = True
+        kws.pop("d", None)
+        return self.listConnections(**kws)
+
     def listConnectionsStr(self, **kws):
         items = cmds.listConnections(self.name(), **kws)
         if items is None:
             return []
         return items
 
-    def cmds_listConnections(self, **kws):
-        items = self.listConnectionsStr(**kws)
-        _c = kws.get("c", kws.get("connections", False))
-        _d = kws.get("d", kws.get("destination", True))
-        _p = kws.get("p", kws.get("plugs", False))
-        _s = kws.get("s", kws.get("source", True))
-        _t = kws.get("t", kws.get("type", ""))
-        if _c:
-            return [(self.attr(items[i].split(".")[-1]), MetanObject(items[i + 1])) for i in range(0, len(items), 2)]
-        if _p:
-            return [Attribute(item) for item in items]
-        else:
-            return [MetanObject(item) for item in items]
+    def listConnections(self, **kws):
+        return self._listConnectionsUsedCmds(**kws)
 
-    def api_listConnections(self, **kws):
+    def _listConnectionsUsedCmds(self, **kws):
+        _kws = dict(kws)
+        _gen = False
+        if "asGenerator" in _kws:
+            _gen = _kws.pop("asGenerator")
+
+        items = self.listConnectionsStr(**_kws)
+        _c = kws.get("c", kws.get("connections", False))
+        # _d = kws.get("d", kws.get("destination", True))
+        _p = kws.get("p", kws.get("plugs", False))
+        # _s = kws.get("s", kws.get("source", True))
+        # _t = kws.get("t", kws.get("type", ""))
+
+        if _p:
+            castobj = Attribute
+        else:
+            castobj = MetanObject
+
+        if _c:
+            if _gen:
+                return ((self.attr(items[i].split(".")[-1]), castobj(items[i + 1])) for i in range(0, len(items), 2))
+            else:
+                return [(self.attr(items[i].split(".")[-1]), castobj(items[i + 1])) for i in range(0, len(items), 2)]
+        else:
+            if _gen:
+                return (castobj(item) for item in items)
+            else:
+                return [castobj(item) for item in items]
+
+    def _listConnectionsUsedApi(self, **kws):
         _c = kws.get("c", kws.get("connections", False))
         _d = kws.get("d", kws.get("destination", True))
         _p = kws.get("p", kws.get("plugs", False))
         _s = kws.get("s", kws.get("source", True))
         _t = kws.get("t", kws.get("type", ""))
+        # _generator = kws.get("gen", kws.get("asGenerator", False))
         if _c:
             plugs = []
             for item in self._MFn.getConnections():

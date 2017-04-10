@@ -363,6 +363,27 @@ class TestScene(unittest.TestCase):
         assert(m1.t.tx._cache == True)
         assert(m2.t.tx._cache == False)
 
+    def test_listconnections(self):
+        print(u"test_listconnections")
+        cmds.file(new=True, f=True)
+        cube = cmds.polyCube()[0]
+        m = mtn.M(u"pCube1")
+
+        cmds.setKeyframe("pCube1.tx", "pCube1.ty", "pCube1.tz",
+                         "pCube1.rx", "pCube1.ry", "pCube1.rz",
+                         "pCube1.sx", "pCube1.sy", "pCube1.sz")
+
+        assert(type(m.listConnections()) == list)
+        assert(m.listConnections(asGenerator=True).__class__.__name__ == "generator")
+        m.listConnections(asGenerator=True, c=True)
+        m.listConnections(asGenerator=True, p=True)
+        m.listConnections(asGenerator=True, c=True, p=True)
+        m.listConnections(c=True)
+        m.listConnections(p=True)
+        m.listConnections(c=True, p=True)
+        assert(m.listConnections(c=True,s=False) == [])
+        assert(m.listConnections(p=True,s=False) == [])
+
 
     def runTest(self):
         self.test_get()
@@ -371,6 +392,7 @@ class TestScene(unittest.TestCase):
         self.test_listattr()
         self.test_hasattr()
         self.test_cached_attribute()
+        self.test_listconnections()
 
 
 
