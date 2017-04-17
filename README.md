@@ -18,6 +18,8 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   
 #### まだできないこと（未実装なもの）
 
+  * アトリビュートの接続（connnect()）
+  * 接続の解除（disconnnect()）
   * SRT関係のメソッド（Transform.getTranslation()など）
   * ノードタイプ固有のメソッド（DagNode.getShapes(),など）
   * その他もろもろ(addAttr,deleteAttr,addChild,getChildren,hasChild,numChildren,hasParent,getParent,setParent....
