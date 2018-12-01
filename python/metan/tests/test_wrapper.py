@@ -18,7 +18,6 @@ class TestScene(unittest.TestCase):
         print cube
         m = mtn.M(u"pCube1")
 
-
         print 'm.t.get()', m.t.get()
         print 'm.translate.get()', m.translate.get()
         print 'm.tx.get()', m.tx.get()
@@ -211,64 +210,64 @@ class TestScene(unittest.TestCase):
 
         print("end : node type test.")
 
-    def test_set(self):
+    def testset_useapi(self):
         cmds.file(new=True, f=True)
         cube = cmds.polyCube()[0]
         print cube
         m = mtn.M(u"pCube1")
         m.tx.set(1); assert(m.tx.get() == 1)
-        m.tx._set(2); assert(m.tx.get() == 2)
+        m.tx.set_useapi(2); assert(m.tx.get() == 2)
         m.t.set(1,1,1); assert(m.t.get() == [1,1,1])
-        m.t._set(1,1,1); assert(m.t.get() == [1,1,1])
+        m.t.set_useapi(1,1,1); assert(m.t.get() == [1,1,1])
         m.t.set([1,2,3]); assert(m.t.get() == [1,2,3])
-        m.t._set([1,2,3]); assert(m.t.get() == [1,2,3])
+        m.t.set_useapi([1,2,3]); assert(m.t.get() == [1,2,3])
         m.t.set(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
-        m.t._set(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
+        m.t.set_useapi(Vector(3,1,2)); assert(m.t.get() == [3,1,2])
 
         m.rx.set(0.349); self.failUnlessAlmostEqual(m.rx.get(), 0.349)
         m.rx.set(0); assert(m.rx.get() == 0)
-        m.rx._set(0.349); self.failUnlessAlmostEqual(m.rx.get(), 0.349)
-        m.rx._set(0); assert(m.rx.get() == 0)
+        m.rx.set_useapi(0.349); self.failUnlessAlmostEqual(m.rx.get(), 0.349)
+        m.rx.set_useapi(0); assert(m.rx.get() == 0)
         m.r.set(.3,.4,.5);
         self.failUnlessAlmostEqual(m.rx.get(), 0.3)
         self.failUnlessAlmostEqual(m.ry.get(), 0.4)
         self.failUnlessAlmostEqual(m.rz.get(), 0.5)
-        m.r._set(.1,.2,.3)
+        m.r.set_useapi(.1,.2,.3)
         self.failUnlessAlmostEqual(m.rx.get(), 0.1)
         self.failUnlessAlmostEqual(m.ry.get(), 0.2)
         self.failUnlessAlmostEqual(m.rz.get(), 0.3)
 
         m.sx.set(2); assert(m.sx.get() == 2)
-        m.sx._set(1); assert(m.sx.get() == 1)
+        m.sx.set_useapi(1); assert(m.sx.get() == 1)
         m.s.set(1,1,1); assert(m.s.get() == [1,1,1])
-        m.s._set(1,1,1); assert(m.s.get() == [1,1,1])
+        m.s.set_useapi(1,1,1); assert(m.s.get() == [1,1,1])
         m.s.set([1,2,3]); assert(m.s.get() == [1,2,3])
-        m.s._set([1,2,3]); assert(m.s.get() == [1,2,3])
+        m.s.set_useapi([1,2,3]); assert(m.s.get() == [1,2,3])
         m.s.set(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
-        m.s._set(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
+        m.s.set_useapi(Vector(3,1,2)); assert(m.s.get() == [3,1,2])
 
         m = mtn.M("pCubeShape1")
         # bool
         m.colorSet[0].clamped.set(False); assert(m.colorSet[0].clamped.get() == False)
-        m.colorSet[0].clamped._set(False); assert(m.colorSet[0].clamped.get() == False)
+        m.colorSet[0].clamped.set_useapi(False); assert(m.colorSet[0].clamped.get() == False)
         m.colorSet[0].clamped.set(1); assert(m.colorSet[0].clamped.get() == True)
-        m.colorSet[0].clamped._set(1); assert(m.colorSet[0].clamped.get() == True)
+        m.colorSet[0].clamped.set_useapi(1); assert(m.colorSet[0].clamped.get() == True)
         # enum
         m.colorSet[0].representation.set(2); assert(m.colorSet[0].representation.get() == 2)
-        m.colorSet[0].representation._set(2); assert(m.colorSet[0].representation.get() == 2)
+        m.colorSet[0].representation.set_useapi(2); assert(m.colorSet[0].representation.get() == 2)
         m.colorSet[0].representation.set(4); assert(m.colorSet[0].representation.get() == 4)
-        m.colorSet[0].representation._set(4); assert(m.colorSet[0].representation.get() == 4)
+        m.colorSet[0].representation.set_useapi(4); assert(m.colorSet[0].representation.get() == 4)
         # string
         m.currentColorSet.set(u"hokuhoku"); assert(m.currentColorSet.get() == u"hokuhoku")
         m.currentColorSet.set(u""); assert(m.currentColorSet.get() == u"")
-        m.currentColorSet._set(u"hokuhoku"); assert(m.currentColorSet.get() == u"hokuhoku")
-        m.currentColorSet._set(u""); assert(m.currentColorSet.get() == u"")
+        m.currentColorSet.set_useapi(u"hokuhoku"); assert(m.currentColorSet.get() == u"hokuhoku")
+        m.currentColorSet.set_useapi(u""); assert(m.currentColorSet.get() == u"")
         # int
         m = mtn.M("polyCube1")
         m.subdivisionsWidth.set(2); assert(m.subdivisionsWidth.get() == 2)
-        m.subdivisionsWidth._set(2); assert(m.subdivisionsWidth.get() == 2)
+        m.subdivisionsWidth.set_useapi(2); assert(m.subdivisionsWidth.get() == 2)
         m.subdivisionsWidth.set(1); assert(m.subdivisionsWidth.get() == 1)
-        m.subdivisionsWidth._set(1); assert(m.subdivisionsWidth.get() == 1)
+        m.subdivisionsWidth.set_useapi(1); assert(m.subdivisionsWidth.get() == 1)
 
         cmds.circle()
         m = mtn.M(u"nurbsCircleShape1")
@@ -280,8 +279,8 @@ class TestScene(unittest.TestCase):
         m = mtn.M("quatAdd1")
         m.input1Quat.set(1, 1, 1, 1); assert(m.input1Quat.get() == [1.0,1.0,1.0,1.0])
         m.input1Quat.set(2, 3, 4, 5); assert(m.input1Quat.get() == [2.0,3.0,4.0,5.0])
-        m.input1Quat._set(1, 1, 1, 1); assert(m.input1Quat.get() == [1.0,1.0,1.0,1.0])
-        m.input1Quat._set(2, 3, 4, 5); assert(m.input1Quat.get() == [2.0,3.0,4.0,5.0])
+        m.input1Quat.set_useapi(1, 1, 1, 1); assert(m.input1Quat.get() == [1.0,1.0,1.0,1.0])
+        m.input1Quat.set_useapi(2, 3, 4, 5); assert(m.input1Quat.get() == [2.0,3.0,4.0,5.0])
 
         # matrix
         cmds.createNode(u"addMatrix")
@@ -299,15 +298,15 @@ class TestScene(unittest.TestCase):
         # assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
 
         # api
-        m.i[0]._set(5,1,1,1,5,1,1,1,5,1,1,1,5,1,1,1)
+        m.i[0].set_useapi(5,1,1,1,5,1,1,1,5,1,1,1,5,1,1,1)
         assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
-        m.i[0]._set([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3])
+        m.i[0].set_useapi([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3])
         assert(repr(m.matrixSum.get()) == 'Matrix(((0, 0, 0, 0), (1, 1, 1, 1), (2, 2, 2, 2), (3, 3, 3, 3)))')
-        m.i[0]._set(mtn.Matrix())
+        m.i[0].set_useapi(mtn.Matrix())
         assert(repr(m.matrixSum.get()) == 'Matrix(((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)))')
-        m.i[0]._set([[0,0,0,0],[1,1,1,1],[2,2,2,2],[3,3,3,3]])
+        m.i[0].set_useapi([[0,0,0,0],[1,1,1,1],[2,2,2,2],[3,3,3,3]])
         assert(repr(m.matrixSum.get()) == 'Matrix(((0, 0, 0, 0), (1, 1, 1, 1), (2, 2, 2, 2), (3, 3, 3, 3)))')
-        m.i[0]._set([5,1,1,1],[5,1,1,1],[5,1,1,1],[5,1,1,1])
+        m.i[0].set_useapi([5,1,1,1],[5,1,1,1],[5,1,1,1],[5,1,1,1])
         assert(repr(m.matrixSum.get()) == 'Matrix(((5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1), (5, 1, 1, 1)))')
 
 
@@ -384,15 +383,51 @@ class TestScene(unittest.TestCase):
         assert(m.listConnections(c=True,s=False) == [])
         assert(m.listConnections(p=True,s=False) == [])
 
+    def test_connect(self):
+        print(u"test_connect")
+        cmds.file(new=True, f=True)
+        cube1 = cmds.polyCube()[0]
+        cube2 = cmds.polyCube()[0]
+        cube3 = cmds.polyCube()[0]
+        n1 = mtn.M(u"pCube1")
+        n2 = mtn.M(u"pCube2")
+        n3 = mtn.M(u"pCube3")
+
+        n1.t.connect(n2.t)
+        n1.rx.connect(n2.rx)
+        n1.t.inputs()
+        n1.t.outputs()
+        n1.t.connections()
+        assert(n1.t.isConnected() == True)
+        assert(n1.t.isConnected(inputs=True, outputs=False) == False)
+        assert(n1.t.isConnected(inputs=False, outputs=True) == True)
+        assert(n2.t.isConnected(inputs=True, outputs=False) == True)
+        assert(n2.t.isConnected(inputs=False, outputs=True) == False)
+        n1.t.disconnect(n2.t)
+        n1.rx.disconnect(n2.rx)
+
+        n1.t.connect(n2.t)
+        n2.t.connect(n3.t)
+        n2.t.disconnectInputs()
+        assert(n1.t.isConnected() == False)
+        n1.t.connect(n2.t)
+        n2.t.disconnectOutputs()
+        assert(n3.t.isConnected() == False)
+        n2.t.connect(n3.t)
+        n2.t.disconnect()
+        assert(n1.t.isConnected() == False)
+        assert(n3.t.isConnected() == False)
+
 
     def runTest(self):
         self.test_get()
         self.test_types()
-        self.test_set()
+        self.testset_useapi()
         self.test_listattr()
         self.test_hasattr()
         self.test_cached_attribute()
         self.test_listconnections()
+        self.test_connect()
 
 
 

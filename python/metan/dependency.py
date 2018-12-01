@@ -3,6 +3,7 @@ from __future__ import print_function, absolute_import, division
 import maya.cmds as cmds
 from metan.wrapclass import MetanObject, Attribute
 
+
 class DependNode(MetanObject):
     u""""""
 

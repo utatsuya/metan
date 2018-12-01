@@ -4,7 +4,6 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
 #### 現時点でできること
 
-  * オブジェクト生成
   * アトリビュートの値の取得
   * アトリビュートへ値を設定
   * オブジェクト同士の比較 
@@ -12,14 +11,14 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   * DependNode.listAttrStr(), _listAttr() [issues#9](https://github.com/utatsuya/metan/issues/9)
   * DependNode.hasAttr() [issues#10](https://github.com/utatsuya/metan/issues/10)
   * Attribute()をキャッシュして高速化 [issues#5](https://github.com/utatsuya/metan/issues/5)
-  * [New] MetanObject.listConnections(),inputs(),outputs() [issues#11](https://github.com/utatsuya/metan/issues/11)
+  * MetanObject.listConnections(),inputs(),outputs() [issues#11](https://github.com/utatsuya/metan/issues/11)
+  * アトリビュートの接続・解除（Attribute.connnect(),disconnect()）
+  * コネクションの取得（Attribute.inputs(),outputs(),connections(),isConnected()）
 
 ※getsetは内部単位で扱います。例えば、回転値はUI上ではDegreeとなっていてもmetanでは常にRadianです。
   
 #### まだできないこと（未実装なもの）
 
-  * アトリビュートの接続（connnect()）
-  * 接続の解除（disconnnect()）
   * SRT関係のメソッド（Transform.getTranslation()など）
   * ノードタイプ固有のメソッド（DagNode.getShapes(),など）
   * その他もろもろ(addAttr,deleteAttr,addChild,getChildren,hasChild,numChildren,hasParent,getParent,setParent....

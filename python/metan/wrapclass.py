@@ -145,6 +145,18 @@ class MetanObject(object):
                         else:
                             mplg = mplg.child(mfn.attribute(_attrname))
 
+                try:
+                    #mdag = om.MFnDagNode(_mobj)
+                    apitype = _mobj.apiType()
+                    if apitype in [om.MFn.kTransform, om.MFn.kJoint]:
+                        mfn = om.MFnTransform(_mobj)
+                    elif apitype in [om.MFn.kSkinClusterFilter]:
+                        mfn = _MFn_MFnSkinCluster(_mobj)
+                    elif apitype in [om.MFn.kAnimCurve]:
+                        mfn = _MFn_MFnAnimCurve(_mobj)
+                except TypeError:
+                    pass
+                
                 # _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute()}
                 _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute(), "_MObjectHandle":mobjh}
                 return set_api_objects(cls, _kws)
@@ -212,10 +224,66 @@ class MetanObject(object):
                 else:
                     mplg = mfn.findPlug(mfn.attribute(args[1]), False)
 
+            try:
+                mdag = om.MFnDagNode(_mobj)
+                apitype = _mobj.apiType()
+                if apitype in [om.MFn.kTransform, om.MFn.kJoint]:
+                    mfn = om.MFnTransform(_mobj)
+                elif apitype in [om.MFn.kSkinClusterFilter]:
+                    mfn = _MFn_MFnSkinCluster(_mobj)
+                elif apitype in [om.MFn.kAnimCurve]:
+                    mfn = _MFn_MFnAnimCurve(_mobj)
+            except TypeError:
+                pass
+            
             _kws = {"_MPlug":mplg, "_MFn":mfn, "_MObject":mplg.attribute(), "_MObjectHandle":mobjh}
             return set_api_objects(cls, _kws)
 
+        # Case : MObject
+        #   cls(MObject)
+        elif isinstance(arg0, om.MObject):
+            mobj = arg0
 
+            # TODO: dagかそうでないかの判断をオブジェクトの生成でチェックしてしまっている
+            # dagの場合、名前の重複の可能性があるので、partialPathName,fullPathNameを利用する必要がある
+            try:
+                _mfn = om.MFnDagNode(mobj)
+                mdag = _mfn.getPath()
+                mfn = _mfn
+                name = mfn.partialPathName()
+            except RuntimeError:
+                mfn = om.MFnDependencyNode(mobj)
+                name = mfn.name()
+
+            try:
+                if cls.__name__ == MetanObject.__name__:
+                    if mobj.apiType() == om.MFn.kTransform:
+                        return dag.Transform(name)
+                    elif mobj.apiType() == om.MFn.kJoint:
+                        return dag.Joint(name)
+                    elif mobj.apiType() == om.MFn.kSkinClusterFilter:
+                        return dep.SkinCluster(name)
+                    elif mobj.hasFn(om.MFn.kAnimCurve):
+                        return dep.AnimCurve(name)
+                    else:
+                        return dep.DependNode(name)
+
+            except TypeError:
+                pass
+
+            try:
+                if cls.__name__ in [dag.Transform.__name__, dag.Joint.__name__]:
+                    mfn = om.MFnTransform(mobj)
+                elif cls.__name__ in [dep.SkinCluster.__name__]:
+                    mfn = _MFn_MFnSkinCluster(mobj)
+                elif cls.__name__ in [dep.AnimCurve.__name__]:
+                    mfn = _MFn_MFnAnimCurve(mobj)
+            except TypeError:
+                pass
+
+            mobjh = _MFn_MObjectHandle(mobj)
+            _kws = {"_MDagPath":mdag, "_MFn":mfn, "_MObjectHandle":mobjh, "_MObject":mobj}
+            return set_api_objects(cls, _kws)
 
     def attr(self, attr):
         self.validCheck()
@@ -235,7 +303,6 @@ class MetanObject(object):
 
     def __getattr__(self, attr):
         return self.attr(attr)
-
 
     def __repr__(self):
             return '{0}("{1}")'.format(self.__class__.__name__, self.__name())
@@ -265,14 +332,12 @@ class MetanObject(object):
         self.validCheck()
         return self.__name()
 
-
     def isValid(self):
         return self._MObjectHandle.isValid()
 
     def validCheck(self):
         if not self.isValid():
             raise MetanObjectNotFoundError(self.__name())
-
 
     def inputs(self, **kws):
         kws["source"] = True
@@ -372,8 +437,6 @@ class MetanObject(object):
             return [MetanObject(p.name().split(".")[0]) for p in plugs]
 
 
-
-
 class Attribute(MetanObject):
 
     def __init__(self, *args, **kws):
@@ -405,7 +468,6 @@ class Attribute(MetanObject):
             else:
                 raise AttributeError("%r has no attribute or method named '%s'" % (self, attr))
 
-
     def __getattr__(self, attr):
         return self.attr(attr)
 
@@ -431,7 +493,6 @@ class Attribute(MetanObject):
             return size
         else:
             raise TypeError("object of type '{0}' has no len()".format(self.__class__.__name__))
-
 
     def __eq__(self, other):
         if hasattr(other, "_MObject"):
@@ -468,7 +529,11 @@ class Attribute(MetanObject):
         return self.attrName(longName=False)
 
     def nodeName(self):
-        return self.name().split(".")[0]
+        # return self.name().split(".")[0]
+        try:
+            return self._MFn.partialPathName()
+        except AttributeError:
+            return self._MFn.name()
 
     def attrName(self, longName=False):
         if longName:
@@ -480,7 +545,6 @@ class Attribute(MetanObject):
             return [Attribute(self._MPlug.child(i)) for i in range(self._MPlug.numChildren())]
         else:
             raise TypeError("Data type is not valid here")
-
 
     def _setPlugValue(self, *value, **kwds):
         if u"plug" in kwds:
@@ -503,7 +567,6 @@ class Attribute(MetanObject):
                 _value = (_value0.x, _value0.y, _value0.z)
             elif isinstance(_value0, Matrix):
                 _value = (v for i, v in enumerate(_value0))
-
 
         if _apitype in [om.MFn.kAttribute3Double, om.MFn.kAttribute3Float,
                         om.MFn.kAttribute2Double, om.MFn.kAttribute2Float,
@@ -536,7 +599,6 @@ class Attribute(MetanObject):
                     _plug = plug.child(i)
                     kwds["plug"] = _plug
                     self._setPlugValue(_value[i], **kwds)
-
 
         elif _apitype in [om.MFn.kDoubleLinearAttribute, om.MFn.kFloatLinearAttribute]:
             if kwds.get(u"api"):
@@ -601,8 +663,6 @@ class Attribute(MetanObject):
                         else:
                             plug.setMObject(om.MFnMatrixData().create(Matrix(_value)))
 
-
-
         elif _apitype == om.MFn.kCompoundAttribute:
             _count = plug.numChildren()
             if len(_value) != _count:
@@ -629,7 +689,6 @@ class Attribute(MetanObject):
                 _plug = plug.child(i)
                 kwds["plug"] = _plug
                 self._setPlugValue(_value[i], **kwds)
-
 
     def _getPlugValue(self, plug):
         _obj = plug.attribute()
@@ -712,7 +771,60 @@ class Attribute(MetanObject):
     def set(self, *value):
         self._setPlugValue(*value)
 
-    def _set(self, *value):
+    def set_useapi(self, *value):
         self._setPlugValue(*value, api=True)
 
+    def connect(self, attr, f=True):
+        if not attr._MObject.hasFn(om.MFn.kAttribute):
+            raise MetanArgumentError(u"{0} is not attribute class.".format(attr))
+        srcname = "{0}.{1}".format(self.nodeName(), self.longName())
+        dstname = "{0}.{1}".format(attr.nodeName(), attr.longName())
+        cmds.connectAttr(srcname, dstname, force=f)
+
+    def disconnect(self, attr=None, inputs=True, outputs=True):
+        if attr is not None:
+            if not attr._MObject.hasFn(om.MFn.kAttribute):
+                raise MetanArgumentError(u"{0} is not attribute class.".format(attr))
+            srcname = "{0}.{1}".format(self.nodeName(), self.longName())
+            dstname = "{0}.{1}".format(attr.nodeName(), attr.longName())
+            cmds.disconnectAttr(srcname, dstname)
+
+        else:
+            thisattrname = self.name()
+            if inputs is True:
+                for _ in self._inputs():
+                    cmds.disconnectAttr(_.name(), thisattrname)
+            if outputs is True:
+                for _ in self._outputs():
+                    cmds.disconnectAttr(thisattrname, _.name())
+
+    def disconnectInputs(self):
+        self.disconnect(inputs=True, outputs=False)
+
+    def disconnectOutputs(self):
+        self.disconnect(inputs=False, outputs=True)
+
+    def inputs(self):
+        return [Attribute(i) for i in self._inputs()]
+
+    def outputs(self):
+        return [Attribute(i) for i in self._outputs()]
+
+    def connections(self):
+        return [Attribute(i) for i in self._connections()]
+
+    def _inputs(self):
+        return self._MPlug.connectedTo(True, False)
+
+    def _outputs(self):
+        return self._MPlug.connectedTo(False, True)
+
+    def _connections(self):
+        return self._MPlug.connectedTo(True, True)
+
+    def isConnected(self, inputs=True, outputs=True):
+        if self._MPlug.connectedTo(inputs, outputs):
+            return True
+        else:
+            return False
 
