@@ -2,6 +2,8 @@
 
 Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパーライブラリを作成中です
 
+#### 対応バージョン : 2018, 2017, 2016.5
+
 #### 現時点でできること
 
   * アトリビュートの値の取得
@@ -19,9 +21,9 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   
 #### まだできないこと（未実装なもの）
 
-  * SRT関係のメソッド（Transform.getTranslation()など）
-  * ノードタイプ固有のメソッド（DagNode.getShapes(),など）
-  * その他もろもろ(addAttr,deleteAttr,addChild,getChildren,hasChild,numChildren,hasParent,getParent,setParent....
+  * SRT関係（Transform.getTranslation()など）
+  * その他もろもろ(addAttr,deleteAttr,addChild,getChildren,hasChild,numChildren,getShapes,hasParent,getParent,setParent....
+  * cmdsのラップ
 
 #### プロファイル結果
 
@@ -56,7 +58,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   print dbg.run_profile(pm.PyNode(u"pCube1").tx.set, count=1000)(1)
   print dbg.run_profile(mtn.M(u"pCube1").tx.set, count=1000)(1)
-  print dbg.run_profile(mtn.M(u"pCube1").tx._set, count=1000)(1) #APIを利用したsetのためundo不可
+  print dbg.run_profile(mtn.M(u"pCube1").tx.set_useapi, count=1000)(1) #APIを利用したsetのためundo不可
 
 
   # cubeのtranslateに1000回設定 その１
@@ -64,7 +66,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)(1,2,3)
   print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)(1,2,3)
-  print dbg.run_profile(mtn.M(u"pCube1").t._set, count=1000)(1,2,3) #APIを利用したsetのためundo不可
+  print dbg.run_profile(mtn.M(u"pCube1").t.set_useapi, count=1000)(1,2,3) #APIを利用したsetのためundo不可
 
 
   # cubeのtranslateに1000回設定 その２
@@ -72,7 +74,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)([1,2,3])
   print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)([1,2,3])
-  print dbg.run_profile(mtn.M(u"pCube1").t._set, count=1000)([1,2,3]) #APIを利用したsetのためundo不可
+  print dbg.run_profile(mtn.M(u"pCube1").t.set_useapi, count=1000)([1,2,3]) #APIを利用したsetのためundo不可
 
 
   # cubeのtranslateに1000回設定 その３
@@ -80,7 +82,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   print dbg.run_profile(pm.PyNode(u"pCube1").t.set, count=1000)(dt.Vector(1,2,3))
   print dbg.run_profile(mtn.M(u"pCube1").t.set, count=1000)(mtn.Vector(1,2,3))
-  print dbg.run_profile(mtn.M(u"pCube1").t._set, count=1000)(mtn.Vector(1,2,3)) #APIを利用したsetのためundo不可
+  print dbg.run_profile(mtn.M(u"pCube1").t.set_useapi, count=1000)(mtn.Vector(1,2,3)) #APIを利用したsetのためundo不可
 
 
   # addMatrixのinput[0]にMatrixを100回設定
@@ -89,7 +91,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   cmds.createNode(u"addMatrix")
   print dbg.run_profile(pm.PyNode(u"addMatrix1").i[0].set, count=100)(dt.Matrix())
   print dbg.run_profile(mtn.M(u"addMatrix1").i[0].set, count=100)(mtn.Matrix(mtn.Matrix()))
-  print dbg.run_profile(mtn.M(u"addMatrix1").i[0]._set, count=100)(mtn.Matrix()) #APIを利用したsetのためundo不可
+  print dbg.run_profile(mtn.M(u"addMatrix1").i[0].set_useapi, count=100)(mtn.Matrix()) #APIを利用したsetのためundo不可
   ```
   
 #### 記述例
