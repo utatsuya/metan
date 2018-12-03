@@ -16,14 +16,12 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   * MetanObject.listConnections(),inputs(),outputs() [issues#11](https://github.com/utatsuya/metan/issues/11)
   * アトリビュートの接続・解除（Attribute.connnect(),disconnect()）
   * コネクションの取得（Attribute.inputs(),outputs(),connections(),isConnected()）
+  * 簡易的なcmdsのラップ（mtn.ls(), mtn.getAttr(), mtn.setAttr(),...）
 
-※getsetは内部単位で扱います。例えば、回転値はUI上ではDegreeとなっていてもmetanでは常にRadianです。
-  
 #### まだできないこと（未実装なもの）
 
   * SRT関係（Transform.getTranslation()など）
   * その他もろもろ(addAttr,deleteAttr,addChild,getChildren,hasChild,numChildren,getShapes,hasParent,getParent,setParent....
-  * cmdsのラップ
 
 #### プロファイル結果
 
@@ -31,6 +29,7 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
   import maya.cmds as cmds
   import pymel.core as pm
   import pymel.core.datatypes as dt
+  import metan.core as mtn
   import metan.debug as dbg
 
   cmds.polyCube()[0]
@@ -98,10 +97,8 @@ Autodesk Maya Python API2.0 をPyMelライクに利用するためのラッパ�
 
   ```
   import metan.core as mtn
-  import maya.cmds as cmds
-  cube = cmds.polyCube()[0]
-  m = mtn.M(cube)
-  
+  m = mtn.polyCube()[0]
+
   m.t.name()
   m.attr("t").name()
   m.attr("translate").name()

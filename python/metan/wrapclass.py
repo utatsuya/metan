@@ -33,6 +33,33 @@ if current_version >= 201600:
     _MFn_MObjectHandle = om.MObjectHandle
 
 
+def to_string(args):
+    _args = []
+    for arg in args:
+        if hasattr(arg, "metan_class"):
+            _args.append(str(arg))
+        else:
+            _args.append(arg)
+    return _args
+
+
+def to_object(args):
+    objects = []
+    if args is None:
+        return objects
+
+    for arg in args:
+        if not isinstance(arg, basestring):
+            objects.append(arg)
+            continue
+
+        obj = MetanObject(arg)
+        if obj is None:
+            raise RuntimeError(arg)
+        else:
+            objects.append(obj)
+    return objects
+
 
 def to_dependencynode(name):
     sellist = om.MSelectionList()
@@ -42,6 +69,7 @@ def to_dependencynode(name):
         return om.MFnDependencyNode(_mobj), _mobj
     except TypeError:
         return
+
 
 def set_api_objects(cls, api_objs):
     _newobj = super(cls.__class__, cls).__new__(cls)
@@ -308,7 +336,7 @@ class MetanObject(object):
             return '{0}("{1}")'.format(self.__class__.__name__, self.__name())
 
     def __str__(self):
-        return self.__repr__()
+        return self.__name()
 
     def __hash__(self):
         return self._MObjectHandle.hashCode()
@@ -472,10 +500,10 @@ class Attribute(MetanObject):
         return self.attr(attr)
 
     def __repr__(self):
-        return u'{0}("{1}")'.format(self.__class__.__name__, self.__name())
+        return u'{0}("{1}.{2}")'.format(self.__class__.__name__, self.nodeName(), self.longName())
 
     def __str__(self):
-        return self.__repr__()
+        return u'{0}.{1}'.format(self.nodeName(), self.longName())
 
     def __iter__(self):
         size = self.size()

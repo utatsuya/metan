@@ -53,7 +53,7 @@ class TestScene(unittest.TestCase):
         print 'm.attr("pim[0]").get()', m.attr("pim[0]").get()
         print 'm.attr("parentInverseMatrix[0]").get()', m.attr("parentInverseMatrix[0]").get()
 
-        assert(repr(m.t.getChildren()) == u'[Attribute("translateX"), Attribute("translateY"), Attribute("translateZ")]')
+        assert(repr(m.t.getChildren()) == u'[Attribute("pCube1.translateX"), Attribute("pCube1.translateY"), Attribute("pCube1.translateZ")]')
 
         print "="*20
 
@@ -418,6 +418,22 @@ class TestScene(unittest.TestCase):
         assert(n1.t.isConnected() == False)
         assert(n3.t.isConnected() == False)
 
+    def test_cmds(self):
+        print(u"test_cmds")
+        cmds.file(new=True, f=True)
+        cube1 = cmds.polyCube()[0]
+        cube2 = cmds.polyCube()[0]
+        cube3 = cmds.polyCube()[0]
+        n1 = mtn.M(u"pCube1")
+        n2 = mtn.M(u"pCube2")
+        n3 = mtn.M(u"pCube3")
+
+        assert(mtn.ls("pCube*")[0].name() == "pCube1")
+        mtn.setAttr(n1.t, 1, 0, 0)
+        assert(mtn.getAttr(n1.t) == [(1.0, 0.0, 0.0)])
+        mtn.select(cl=True)
+        mtn.select(n2)
+        assert(mtn.ls(sl=True)[0] == n2)
 
     def runTest(self):
         self.test_get()
@@ -428,6 +444,7 @@ class TestScene(unittest.TestCase):
         self.test_cached_attribute()
         self.test_listconnections()
         self.test_connect()
+        self.test_cmds()
 
 
 

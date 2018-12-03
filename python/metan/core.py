@@ -8,6 +8,7 @@ from metan.datatype.vector import Vector
 from metan.wrapclass import MetanObject, Attribute
 from metan.dag import Transform, DagNode, Joint
 from metan.dependency import DependNode, AnimCurve, SkinCluster
+from .command import *
 
 M = MetanObject
 
@@ -19,3 +20,4 @@ def selected(*args, **kwds):
         return [MetanObject(name) for name in items]
     else:
         return []
+
